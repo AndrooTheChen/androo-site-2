@@ -49,3 +49,12 @@ nav a:hover,.text-link:hover,.post-row:hover h3,.blog-row:hover h2,.links-list a
 .skip-content{background:var(--coral);color:var(--paper)}
 button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline-color:#ffc477}
 @media(max-width:580px){.site-header{min-height:78px}}
+
+/* Minimal intros leave room for the actual page content. */
+.about-minimal,.prayer-minimal{padding-top:48px}
+.about-copy h1{font:600 22px/1.3 Manrope,sans-serif;letter-spacing:-.6px;margin:20px 0 16px}
+.about-copy p{font-size:14px;line-height:1.7}
+.about-copy .placeholder-label{font-size:9px}
+.blog-intro{padding:48px 0 28px}
+.blog-intro h1{font:400 17px/1.65 'DM Sans',sans-serif;letter-spacing:0;color:var(--muted);margin:0}
+@media(max-width:580px){.about-minimal,.prayer-minimal{padding-top:32px}.blog-intro{padding:32px 0 24px}}

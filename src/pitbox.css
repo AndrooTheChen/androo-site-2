@@ -15,8 +15,8 @@ body[data-home] #main{flex:1;display:flex;flex-direction:column;min-height:0}
 .landing-greeting h1{font:700 clamp(52px,7.8vw,108px)/1.03 Manrope,sans-serif;letter-spacing:-5px;margin:0;white-space:nowrap;color:#faf7ee}
 .papaya-dot{color:#ff9c26}
 .landing-bottom{display:flex;align-items:center;justify-content:flex-end;width:100%;max-width:1200px;margin:0 auto;padding-bottom:18px}
-.intro-control{border:0;border-radius:0;background:transparent;color:#b9c6d9;font:12px/1.6 'DM Sans',sans-serif;padding:12px 0;min-width:82px;text-align:right}
-.intro-control:hover{color:#ffb953;text-decoration:underline;text-underline-offset:4px}
+.intro-control{border:1px solid #ff9b26;border-radius:6px;background:transparent;color:#f9f4e8;font:12px/1.6 'DM Sans',sans-serif;padding:9px 16px;min-width:112px;text-align:center}
+.intro-control:hover{color:#ffb953;border-color:#ffb953;background:#ff9b2612}
 .intro-control[hidden],.pitbox-car[hidden]{display:none!important}
 @media(max-width:800px){.landing-greeting h1{font-size:clamp(42px,7.7vw,66px);letter-spacing:-3px}}
 @media(max-width:580px){body[data-home] #site-content{padding:0 22px}body[data-home] .site-header{min-height:78px}.landing-stage{max-height:none;aspect-ratio:1.05}.landing-stage .pitbox-art{height:auto;top:50%;transform:translateY(-50%)}.landing-greeting{padding:0 3%}.landing-greeting h1{font-size:clamp(31px,9vw,43px);letter-spacing:-1.8px}.landing-bottom{padding-bottom:18px}.pitstop-landing{min-height:420px}}

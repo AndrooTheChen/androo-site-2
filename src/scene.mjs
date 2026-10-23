@@ -1,7 +1,9 @@
 // Original, code-native vector artwork. The car points right, like the reference.
 export function scene(prefix, animated=false){
 const person=(x,y,rotate,kind,delay=0)=>`<g transform="translate(${x} ${y}) rotate(${rotate})"><g class="pit-mechanic ${kind}" style="--crew-delay:${delay}ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/>${kind==='gun'?'<path d="M26 31h24m-8-5v14" stroke="#90cfdf" stroke-width="6" stroke-linecap="round"/>':''}${kind==='tyre'?'<g transform="translate(0 42)"><rect x="-26" y="-17" width="52" height="37" rx="11" fill="#0d1728"/><ellipse rx="13" ry="18" fill="#27374c"/><path d="M-21-8v21m42-21v21" stroke="#4a5264" stroke-width="2"/></g>':''}</g></g>`;
-return `<svg class="pitbox-art" viewBox="0 0 1200 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Close-up overhead illustration of a papaya-orange and charcoal McLaren race car and matching pit crew"><defs><pattern id="${prefix}-asphalt" width="49" height="43" patternUnits="userSpaceOnUse"><circle cx="5" cy="11" r=".8" fill="#b0c4d4" opacity=".11"/><circle cx="31" cy="32" r=".7" fill="#b0c4d4" opacity=".07"/></pattern><g id="${prefix}-car-shape">
+return `<svg class="pitbox-art" viewBox="0 0 1200 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Close-up overhead illustration of a papaya-orange and charcoal McLaren race car and matching pit crew"><defs><pattern id="${prefix}-asphalt" width="49" height="43" patternUnits="userSpaceOnUse"><circle cx="5" cy="11" r=".8" fill="#b0c4d4" opacity=".11"/><circle cx="31" cy="32" r=".7" fill="#b0c4d4" opacity=".07"/></pattern><!-- Compact racing wordmark, with forward-leaning lettering and a speedmark. -->
+<g id="${prefix}-wordmark" aria-hidden="true"><text x="0" y="26" fill="currentColor" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="800" font-style="italic" letter-spacing="-1.2" textLength="144" lengthAdjust="spacingAndGlyphs">McLaren</text><path d="M136 10Q152-3 174 1L164 15Q155 5 136 10Z" fill="currentColor"/></g>
+<g id="${prefix}-car-shape">
 <ellipse cx="8" cy="12" rx="438" ry="137" fill="#0c1526" opacity=".5"/>
 <!-- suspension -->
 <g stroke="#71869b" stroke-width="5" fill="none"><path d="M-280-104-105-25-285-72m5 176L-105 25-285 72M265-104 145-14 265-72m0 176L145 14 265 72"/></g>
@@ -20,7 +22,7 @@ ${[[-282,-107],[-282,107],[264,-108],[264,108]].map(([x,y])=>`<g transform="tran
 <path d="m-256 15 105 15 115-3-17 14-102-1z" fill="#111f31"/>
 <path d="M-175-10h110m-110 7h90" stroke="#8b9aaa" stroke-width="3" opacity=".45"/>
 <!-- Rear wing -->
-<path d="M-395-115h40v230h-40z" fill="#ff9b24"/><path d="M-393-100h11v200h-11z" fill="#ffc15a"/><path d="M-403-119h56v11h-56zm0 227h56v11h-56z" fill="#17273d"/><text transform="translate(-363 43) rotate(-90)" fill="#142438" font-family="sans-serif" font-size="17" font-weight="800" letter-spacing="2">McLAREN</text>
+<path d="M-395-115h40v230h-40z" fill="#ff9b24"/><path d="M-393-100h11v200h-11z" fill="#ffc15a"/><path d="M-403-119h56v11h-56zm0 227h56v11h-56z" fill="#17273d"/><use class="car-wordmark" href="#${prefix}-wordmark" transform="translate(-386 72) rotate(-90) scale(.85)" color="#142438"/>
 <!-- Cockpit / halo / helmet -->
 <path d="M2-39q40-32 81-7l41 29v34L83 46Q42 71 2 39z" fill="#0b1829"/>
 <path d="M3-42q32-24 68-10l52 33v38L71 52Q35 66 3 42" fill="none" stroke="#ffb547" stroke-width="9"/>
@@ -31,7 +33,7 @@ ${[[-282,-107],[-282,107],[264,-108],[264,108]].map(([x,y])=>`<g transform="tran
 <path d="M346-127q34 8 57 35V92q-23 27-57 35l-11-23 12-39V-65l-12-39z" fill="#1a2a40"/><path d="M349-124q25 6 39 20v208q-14 14-39 20l-7-15q20-14 28-34V-75q-8-20-28-34z" fill="#ff8b1c"/><path d="M360-90h30m-30 17h30m-30 146h30m-30 17h30" stroke="#ffba53" stroke-width="5"/>
 <path d="M338-44v88" stroke="#e4edf0" stroke-width="3" opacity=".65"/>
 <path d="M-90 61q23 0 40-12-4 15-32 23z" fill="#8cd4e7"/>
-<text x="-220" y="6" fill="#f8f5e9" font-family="sans-serif" font-size="17" font-weight="700">McLaren</text>
+<use class="car-wordmark" href="#${prefix}-wordmark" transform="translate(-235 -13) scale(.72)" color="#f8f5e9"/>
 </g></defs>
 <path fill="url(#${prefix}-asphalt)" d="M0 0h1200v620H0z"/>
 <!-- Only the pit box. No circuit, scenery or buildings. -->
