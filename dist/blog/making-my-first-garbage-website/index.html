@@ -1,0 +1,298 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#faf8f0"><meta name="description" content="React Website Notes Preface Jotting down some random notes here. This isn’t meant to be an educational guide but just notes for me to refer back …"/><meta property="og:title" content="Making my first garbage website
+"><meta property="og:description" content="React Website Notes Preface Jotting down some random notes here. This isn’t meant to be an educational guide but just notes for me to refer back …"><meta property="og:type" content="article"><title>Making my first garbage website
+ — Andrew Chen</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css"><script src="/app.js" type="module"></script></head><body><a class="skip-content" href="#main">Skip to content</a><div id="site-content" class="shell"><header class="site-header"><a class="brand" href="/" aria-label="Andrew Chen — Home"><span class="brand-mark" aria-hidden="true">a</span><span>androo<span class="brand-dot">.</span></span></a><button class="menu-button" aria-label="Open navigation" aria-controls="main-nav" aria-expanded="false">Menu <span aria-hidden="true">☰</span></button><nav id="main-nav" aria-label="Main navigation"><a href="/" >Home</a><a href="/about/" >About</a><a href="/blog/" aria-current="page">Blog</a></nav></header><main id="main" tabindex="-1"><article class="article"><a href="/blog/" class="back-link">← Back to all notes</a><header><h1>Making my first garbage website
+</h1><div class="meta">January 2, 2023 · by androo
+ · 12 min read</div></header><div class="article-body"><h2>React Website Notes</h2>
+<h3>Preface</h3>
+<p>Jotting down some random notes here. This isn’t meant to be an educational guide but just notes for me to refer back to for some stuff I thought were noteworthy while building this site. Apologies for it being very syntatically messy; I wanted to document in MD (and the remainder of posts in this site thankfully will be) but I used Google Docs to start off and its MD support is pretty garbage. Still lots to fix up for the site but posting this for now.</p>
+<p>I was a bit ambivalent about blogging in the beginning because of posts like this <a href="https://news.ycombinator.com/item?id=34223288">one I read just today</a> but then I realized no one cares and I hope that I and this blog will remain mostly unseen by the public. I just wanna learn how to build cool websites.</p>
+<h3>Starting Tutorial</h3>
+<p>Ref: <a href="https://www.youtube.com/playlist?list=PLASldBPN_pkBfRXOkBOaeCJYzCnISw5-Z">https://www.youtube.com/playlist?list=PLASldBPN_pkBfRXOkBOaeCJYzCnISw5-Z</a> </p>
+<p>First of all there’s a difference between npm and npx. The former is the standard node package manager while the other is something installed from npm that is somewhat of a short-hand tool to also execute npm binaries [0].</p>
+<p>We’re going to create a <code>content/</code> directory in the <code>$root/src/</code> directory. This will hold all the MD files that will be the posts for our blog.</p>
+<p>Typically we have some kind of database to store the files and they’re read in from the ORM or DB, but it looks like in the video he’s coming up with his own format for storing/querying the Markdown.</p>
+<p>To read the data from our <code>content/</code> directory, we created a <code>getposts.js</code> file in the <code>$root/public/directory</code>. Might want to clean this up later by using a DB and adding that component into our app or perhaps just making a <code>models.js</code> folder to better clearly define the abstractions.</p>
+<p>So this is kind of wacky; we’re invoking a CLI command in the <code>$root/package.json</code> under the list of scripts, ours labeled as <code>“server”</code>.</p>
+<pre><code>  &quot;scripts&quot;: {
+    // …
+    &quot;server&quot;: &quot;node public/getposts.js&quot;
+  },
+</code></pre>
+<p>Instead of running with npm start, we run the above with <code>npm run server</code>. Not really sure why this is.</p>
+<h3>Pondering routing</h3>
+<p>Trying to understand routing; looks like we have react-router/react-router-dom? to do routing on the frontend, express.js to do routing from the backend, and axios to make HTTP requests from frontend to backend [1]. This is probably out of scope (the backend part) for now, but was curious about this. The definition of routing also seems to be adding mapping “routes” to resources such as pages (think more pages in a URL) for the frontend and elements (routes may lead to different processes/functions) in the backend I think. Will need to dig into this more later.</p>
+<h3>Siderant from DTao about webdev stuff</h3>
+<p>Rants and notes from DTao:</p>
+<ul>
+<li>Look into this for perf! Millionjs [2]</li>
+<li><a href="https://swc.rs/">https://swc.rs/</a></li>
+<li>Use vercel with next.js, better than netlify - though it has good wrappers around lambda.</li>
+<li>Vercel abstracts it all away (they sponsor million.js)</li>
+<li>yarn is another pkg manager substitutional to npm (node package manager). npm is slower than yarn.</li>
+<li>pnpm is similar to above but supposed to be better optimized. Used more in China apparently due to using symlinks.</li>
+<li>Try and get as little JS to the client as possible.</li>
+<li>Remix and next.js help speed up this stuff.</li>
+<li>Look into edge runtimes, page streaming, progressive web apps, want to get your app feel like a single-page app.</li>
+<li>Deno hard to ever get as good as node. Bun still too nascent.</li>
+<li>JSX gets bundled into react</li>
+<li>Bundler does some stuff with its interpreter
+Attributes from JSX are props, it interprets it and feeds it into react framework to render.
+This is to stop react element nested calls. See here how JSX transpiler 1:1 to React code and how the JSX is much nicer to read than React. [6]</li>
+<li>Better Asana called linear [7]</li>
+</ul>
+<p>These notes are probably incomprehensible since I was just listening and writing things that stuck out to me.</p>
+<h3>Trying Gatsby</h3>
+<p>Trying to install Gatsby.js, failing due to dependency errors
+I wanted to try and use Gatsby.js to build the blog site instead since it sounded like that was a popular framework (or tool?) to use, but it seems to be very hard to do.</p>
+<p>When I installed gatsby it complained that my node version was too old. I was running node version 17.9.1 while gatsby 5.0+ needed node to be on version 18.0.0+ [8]. </p>
+<p>I also had no idea, but apparently the even numbered node versions lose support (reach EOL) as soon as the next major version comes out while the even numbered ones keep long-term-support (LTS), meaning my version 17.9.1 is no longer supported [9]. </p>
+<p>When trying to upgrade node to either version 18.X or 19.X I kept on getting the error:
+<code>node: /lib/x86_64-linux-gnu/libc.so.6: version &#39;GLIBC_2.28&#39; not found (required by node)</code></p>
+<p>Apparently GLIBC only has version 2.27 for Ubuntu 18.04, this is some other thread I see where others complain of an application with a GLIC == 2.28 dependency breaking on Ubuntu 18.04 LTS [10].</p>
+<p>The options from here were to try and upgrade GLIBC to 2.28+ or upgrade Ubuntu 18.04 -&gt; 20.04 or 22.04, noting that I’m not an actual Linux machine but am instead using WSL. Apparently the latter is quite a bit of work [11], but the former runs the risk of breaking your OS [12].</p>
+<p>For now maybe I’ll just stick to building without Gatsby, this way at least I’ll learn a bit of react-router and then just upgrade my version of WSL Ubuntu later.</p>
+<p>TODO:
+Upgrade Ubuntu WSL
+Get off non-LTS node versions
+Back to tutorial, looking at routing
+Installing the packages:
+react-router-dom 
+React-markdown: markdown parser for react</p>
+<p>Apparently these have a security vulnerability or something and I ran npm audit as it told me to, but then ran into some more GLIBC problems again so now I’m really hoping to upgrade WSL later.</p>
+<h3>Going back to tutorial, adding static Routing</h3>
+<p>So trying to add routing actually was harder than I thought. I’m not sure how in the world the guy in the video had it working – I did exactly what he did and it didn’t work. I’m wondering/hoping the reason was simply because we had different versions of react-dom-router or something since the video is 3 years old.</p>
+<p>Instead I asked ChatGPT what to do and it recommended I put the routing in a separate routes.js file, have that file present in the App component, and just have the App component rendered by the ReactDOM in the top-level index.js as it was before. Not sure if this is the right way to do things but it’s working for me for now. </p>
+<p>ChatGPT response attached in the appendix below.</p>
+<p>Okay I’m just going to do routing from App() in App.js. I tried splitting up the routing but wasted an hour because for the life of me I couldn’t get it to work. The routing works from App.js but when I separate it into its own JS file and import it it doesn’t work and I couldn’t figure out why so screw it.</p>
+<p>I was able to add the headers and footers just fine as described in the video. What’s interesting is that he had them encapsulated in a layout component and had the App simply render the Layout. I wonder if this is best practice? Each page will likely be composed of several other components, so should we have a Layout top-level component for each page perhaps?</p>
+<p>Also added some CSS flex stuff to the layout to push the footer to the bottom of the page and have proper spacing for the blogposts. Will be good to look back at these later for reference.</p>
+<p>Another interesting note on CSS, so our file structure for pages currently looks like:</p>
+<pre><code>├── components/
+│   ├── components.css
+│   ├── footer.js
+│   ├── header.js
+│   └── layout.js
+</code></pre>
+<p>We use <code>&lt;Header /&gt;</code> and <code>&lt;Footer /&gt;</code> components in <code>layout.js</code>. All of them have CSS styling in components.css, and we import the CSS in only <code>layout.js</code> (the most top-level module in this directory). Importing CSS in footer and header is redundant, and omitting the CSS import from <code>layout.js</code> and adding individually in <code>footer.js</code> or <code>header.js</code> doesn’t work.</p>
+<p>Also some random trivia for myself: we do need to commit the <code>package*.json</code> files since they track dependencies [13]. TLDR, package.json has a 100ft view of the dependency tree and has minimum required versions for packages to install. <code>package-lock.json</code> is more like a 10ft view or is at least more granular or something. Doing an npm install in a directory looks for the <code>package*.json</code> files to find what packages to install.</p>
+<p>So to review and summarize, this is our current dependency tree (for important files I’ve interacted with):</p>
+<pre><code>├── public/
+│   ├── main.js
+├── src/
+│   ├── components/
+│       ├── components.css
+│       ├── footer.js
+│       ├── header.js
+│       └── layout.js
+│   ├── pages/
+│       ├── pages.css
+│       └── home.js
+│   ├── posts/
+│       ├── firstpost.md
+│       └── secondpost.md
+│   ├── App.js
+├── App.js
+└── index.js
+</code></pre>
+<ul>
+<li>Index.js is the top-most level where the ReactDOM renders the root component.</li>
+<li>App.js is the root component and doesn’t render anything really (though it can and probably should). At the moment it does the routing to other pages.</li>
+<li>The only route we have thus far is to the home page defined in src/pages/home.js.
+The Home component simply uses the Layout component and the meat of its contents (still WIP) I’m guessing will be showing the posts. </li>
+<li>The posts are retrieved via a special getPosts() method defined in public/main.js. </li>
+<li>The posts read in by getPosts() write them in JSON format as posts.json in our src/ folder.</li>
+<li>The actual posts themselves are stored in src/posts/ in Markdown.</li>
+<li>The Layout component is defined in our src/components/ folder and is made up of two more components: header and footer which are also contained in this component folder.</li>
+</ul>
+<p>Also some interesting disambiguation between Element and Component since in my head I was using them interchangeably [14].</p>
+<p>Font is still broken. We’re using a Google font called Railway which seems nice. Shouldn’t be too hard to fix, I think I just need to download it and add to project somehow. I was going to do it but when I looked at how to do this the stack overflow article wouldn’t load because it said stack exchange was doing maintenance. Think my network is just being dumb.</p>
+<p>Also added a YouTube embed to a post which was kinda interesting. Didn’t realize I had to change the URL to have ‘embed’ in there instead of ‘watch’ [16].</p>
+<p>There were also a lot of problems using the ReactMarkdown package he used. They revamped their API so the current version I was on had none of the props he used. The library API docs are here [17], and also had to download an extra plugin to render the HTML properly [18] [19].</p>
+<h3>Dynamic Routing</h3>
+<p>The tutorial was quite old and so the APIs for doing dynamic routing weren’t relevant anymore. Luckily was able to find a post of how to do dynamic routing and getting props in via React Hooks instead [20].</p>
+<p>Another change in redirecting is that <code>Redirect</code> Seems to have been deprecated from react-router-dom. Instead we use <code>Navigate</code> as suggested by this article [21].</p>
+<p>Alright so I actually kinda went ahead and finished but went to sleep before documenting because it was like almost 6 AM. Gonna try and document current state of things and how I got there.</p>
+<p>So looking at the file tree again:</p>
+<pre><code>├── public/
+│   ├── main.js
+│   └── CNAME
+├── src/
+│   ├── components/
+│       ├── components.css
+│       ├── footer.js
+│       ├── header.js
+│       ├── postlist.js
+│       ├── navbar.js
+│       └── layout.js
+│   ├── pages/
+│       ├── content/
+│           ├── about.md
+│       ├── pages.css
+│       ├── about.js
+│       ├── notfound.js
+│       ├── post.js
+│       └── home.js
+│   ├── posts/
+│       ├── firstpost.md
+│       └── secondpost.md
+├── pages.json
+├── posts.json
+├── App.js
+└── index.js
+</code></pre>
+<p>The file list has grown quite a bit but will try and summarize what’s going on here.</p>
+<ul>
+<li><code>public/</code> has main.js which has the helper functions to read MD files and output them in json. <ul>
+<li>All the MD posts from <code>src/posts/</code> are saved into posts.json and MD files in <code>src/pages/content/</code> are saved into pages.json.
+<code>CNAME</code> is a DNS record file for letting me redirect the domain from a github.io site to my own site.</li>
+</ul>
+</li>
+<li><code>src/components/</code> has the React components and the styling CSS file.<ul>
+<li>Each one is fairly straightforward and follows the same pattern of having React imported, creating a function to return some JSX, and exporting the function</li>
+<li>The components may be used by each other; <code>layouts.js</code> uses <code>header.js</code> and <code>footer.js</code> for example.</li>
+<li>The <code>navbar.js</code> component uses Links from react-router-dom to create a navbar and have links.</li>
+<li><code>postlist.js</code> reads from posts.json and renders the posts in a list for us to show while also truncating some of it.</li>
+</ul>
+</li>
+<li><code>src/pages</code> contains the pages (each page has its own JS file) and CSS, and the components are used here.</li>
+<li><code>App.js</code> handles all the routing.
+<code>Index.js</code> just renders the App component.</li>
+</ul>
+<h3>Deploying to Github Pages</h3>
+<p>The method of deploying was fairly straightforward: </p>
+<p>Got help forwarding the domain to a Google domains site here though [23]. Basically just had to configure an A record with the GH IPs [24] and a CNAME record for the www subdomain to point to my new site. The custom domain name had to be added in the package.json as:</p>
+<pre><code>  &quot;homepage&quot;: &quot;https://androochen.com&quot;,
+</code></pre>
+<p>Along with some other GH page scripts. The deployment process is fairly simple. To add and read more MD posts we can just run the main.js in the public file to convert them to JSON with <code>npm run server</code>.</p>
+<p>Then deploying the website will simply be <code>npm run deploy</code></p>
+<p>[0] <a href="https://www.npmjs.com/package/npx">https://www.npmjs.com/package/npx</a> </p>
+<p>[1] <a href="https://appdividend.com/2022/03/12/react-axios/">https://appdividend.com/2022/03/12/react-axios/</a> </p>
+<p>[2] <a href="https://millionjs.org/">https://millionjs.org/</a> </p>
+<p>[3] <a href="https://swc.rs/">https://swc.rs/</a> </p>
+<p>[4] <a href="https://vercel.com/">https://vercel.com/</a></p>
+<p>[5] next.js</p>
+<p>[6] <a href="https://babeljs.io/repl/#?browsers=defaults%2C%20not%20ie%2011%2C%20not%20ie_mob%2011&build=&builtIns=false&corejs=3.21&spec=false&loose=false&code_lz=GYVwdgxgLglg9mABACwKYBt1wBQEpEDeAUIogE6pQhlIA8AJjAG4B8AEhlogO5xnr0AhLQD0jVgG4iAXyJA&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=false&fileSize=false&timeTravel=false&sourceType=module&lineWrap=true&presets=react&prettier=false&targets=&version=7.18.9&externalPlugins=&assumptions=%7B%7D">https://babeljs.io/repl/#?browsers=defaults%2C%20not%20ie%2011%2C%20not%20ie_mob%2011&amp;build=&amp;builtIns=false&amp;corejs=3.21&amp;spec=false&amp;loose=false&amp;code_lz=GYVwdgxgLglg9mABACwKYBt1wBQEpEDeAUIogE6pQhlIA8AJjAG4B8AEhlogO5xnr0AhLQD0jVgG4iAXyJA&amp;debug=false&amp;forceAllTransforms=false&amp;shippedProposals=false&amp;circleciRepo=&amp;evaluate=false&amp;fileSize=false&amp;timeTravel=false&amp;sourceType=module&amp;lineWrap=true&amp;presets=react&amp;prettier=false&amp;targets=&amp;version=7.18.9&amp;externalPlugins=&amp;assumptions=%7B%7D</a> </p>
+<p>[7] <a href="https://linear.app/">https://linear.app/</a> </p>
+<p>[8] <a href="https://www.gatsbyjs.com/docs/reference/release-notes/migrating-from-v4-to-v5/#minimal-nodejs-version-1800">https://www.gatsbyjs.com/docs/reference/release-notes/migrating-from-v4-to-v5/#minimal-nodejs-version-1800</a> </p>
+<p>[9] <a href="https://nodesource.com/blog/understanding-how-node-js-release-lines-work/">https://nodesource.com/blog/understanding-how-node-js-release-lines-work/</a> </p>
+<p>[10] <a href="https://github.com/pi-hole/FTL/issues/1420">https://github.com/pi-hole/FTL/issues/1420</a> </p>
+<p>[11] <a href="https://askubuntu.com/questions/1428423/upgrade-ubuntu-in-wsl2-from-20-04-to-22-04">https://askubuntu.com/questions/1428423/upgrade-ubuntu-in-wsl2-from-20-04-to-22-04</a> </p>
+<p>[12] <a href="https://stackoverflow.com/questions/72513993/how-to-install-glibc-2-29-or-higher-in-ubuntu-18-04">https://stackoverflow.com/questions/72513993/how-to-install-glibc-2-29-or-higher-in-ubuntu-18-04</a> </p>
+<p>[13] <a href="https://dev.to/salothom/package-json-vs-package-lock-json-do-you-need-both-1mjf">https://dev.to/salothom/package-json-vs-package-lock-json-do-you-need-both-1mjf</a> </p>
+<p>[14] <a href="https://www.geeksforgeeks.org/what-is-the-difference-between-element-and-component/">https://www.geeksforgeeks.org/what-is-the-difference-between-element-and-component/</a> </p>
+<p>[15] <a href="https://fonts.google.com/specimen/Raleway">https://fonts.google.com/specimen/Raleway</a> </p>
+<p>[16] <a href="https://stackoverflow.com/questions/25661182/embed-youtube-video-refused-to-display-in-a-frame-because-it-set-x-frame-opti">https://stackoverflow.com/questions/25661182/embed-youtube-video-refused-to-display-in-a-frame-because-it-set-x-frame-opti</a> </p>
+<p>[17] <a href="https://github.com/remarkjs/react-markdown#use">https://github.com/remarkjs/react-markdown#use</a> </p>
+<p>[18] <a href="https://github.com/remarkjs/react-markdown#appendix-a-html-in-markdown">https://github.com/remarkjs/react-markdown#appendix-a-html-in-markdown</a> </p>
+<p>[19] <a href="https://github.com/rehypejs/rehype-raw">https://github.com/rehypejs/rehype-raw</a> </p>
+<p>[20] <a href="https://blog.webdevsimplified.com/2022-07/react-router/#Dynamic_Routing:~:text=useRoutes%20Hook-,Dynamic%20Routing,-The%20simplest%20and">https://blog.webdevsimplified.com/2022-07/react-router/#Dynamic_Routing:~:text=useRoutes%20Hook-,Dynamic%20Routing,-The%20simplest%20and</a> </p>
+<p>[21] <a href="https://bobbyhadz.com/blog/react-export-redirect-was-not-found-in-react-router-dom">https://bobbyhadz.com/blog/react-export-redirect-was-not-found-in-react-router-dom</a> </p>
+<p>[23] <a href="https://www.youtube.com/watch?v=M5ZtKvk3Sag">https://www.youtube.com/watch?v=M5ZtKvk3Sag</a> </p>
+<p>[24] <a href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site#configuring-an-apex-domain">https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site#configuring-an-apex-domain</a></p>
+<p>Appendix
+ChatGPT response:
+It is common to define routing in a separate file from the root component of your app, and then import the routing information into the root component. This helps to keep the code for your routes separate from the rest of your app, which can make it easier to manage and maintain.</p>
+<p>With this approach, you would typically define your routes in a file such as routes.js, and then import them into your root component (e.g. App.js) to make them available to the rest of the app.</p>
+<p>For example, you might have the following code in your routes.js file:</p>
+<pre><code>import {
+  BrowserRouter as Router,
+  Route,
+  Link
+} from &quot;react-router-dom&quot;;
+
+function AppRoutes() {
+  return (
+    &lt;Router&gt;
+      &lt;div&gt;
+        &lt;nav&gt;
+          &lt;ul&gt;
+            &lt;li&gt;
+              &lt;Link to=&quot;/&quot;&gt;Home&lt;/Link&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;Link to=&quot;/about&quot;&gt;About&lt;/Link&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;Link to=&quot;/users&quot;&gt;Users&lt;/Link&gt;
+            &lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/nav&gt;
+
+        &lt;Route path=&quot;/&quot; exact component={Home} /&gt;
+        &lt;Route path=&quot;/about&quot; component={About} /&gt;
+        &lt;Route path=&quot;/users&quot; component={Users} /&gt;
+      &lt;/div&gt;
+    &lt;/Router&gt;
+  );
+}
+
+export default AppRoutes;
+</code></pre>
+<p>And then in your App.js file, you would import the AppRoutes component and render it as part of your root component:</p>
+<pre><code>import React from &#39;react&#39;;
+import AppRoutes from &#39;./routes&#39;;
+
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;AppRoutes /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>Finally, in your index.js file, you would import the App component and render it to the DOM:</p>
+<pre><code>import React from &#39;react&#39;;
+import ReactDOM from &#39;react-dom&#39;;
+import App from &#39;./App&#39;;
+
+ReactDOM.render(&lt;App /&gt;, document.getElementById(&#39;root&#39;));
+</code></pre>
+<p>This is just one way that you can structure your React app with routing. There are many other approaches that you can take as well. The important thing is to choose an approach that works well for your particular app and that makes it easy to manage and maintain your code.</p>
+</div><div class="article-bottom"><a href="/blog/">← All notes</a><span>Thanks for stopping by.</span></div></article></main><footer class="colophon"><span class="footer-note"><span class="status-dot" aria-hidden="true"></span>A little corner of the internet. © <span data-year>2026</span> Andrew Chen</span><div class="footer-links"><a href="/prayer-partners/">Prayer Partners</a><a href="https://github.com/AndrooTheChen" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/in/andrew-chen-503974149/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></div></footer></div><section id="intro" class="intro pitbox-intro" role="dialog" aria-modal="true" aria-label="Welcome — animated pit stop" hidden><div class="intro-chrome"><span class="brand"><span class="brand-mark" aria-hidden="true">a</span><span>androo<span class="brand-dot">.</span></span></span><button class="skip-intro">Skip intro <span aria-hidden="true">↗</span></button></div><div class="pitbox-stage intro-stage"><div class="intro-copy"><span class="greeting">hello<span class="papaya-dot">.</span></span></div><svg class="pitbox-art" viewBox="0 0 1200 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="intro-art-title"><title id="intro-art-title">Close-up overhead illustration of a papaya-orange and charcoal McLaren race car and matching pit crew</title><defs><pattern id="intro-asphalt" width="49" height="43" patternUnits="userSpaceOnUse"><circle cx="5" cy="11" r=".8" fill="#b0c4d4" opacity=".11"/><circle cx="31" cy="32" r=".7" fill="#b0c4d4" opacity=".07"/></pattern><g id="intro-car-shape">
+<ellipse cx="8" cy="12" rx="438" ry="137" fill="#0c1526" opacity=".5"/>
+<!-- suspension -->
+<g stroke="#71869b" stroke-width="5" fill="none"><path d="M-280-104-105-25-285-72m5 176L-105 25-285 72M265-104 145-14 265-72m0 176L145 14 265 72"/></g>
+<!-- Four slick tyres -->
+<g transform="translate(-282 -107)"><rect x="-49" y="-38" width="98" height="76" rx="16" fill="#0b1423"/><rect x="-38" y="-35" width="76" height="70" rx="13" fill="#172337"/><path d="M-41-20v40m82-40v40" stroke="#455267" stroke-width="3" stroke-linecap="round"/><path d="M-34-30h68" stroke="#88d7e7" stroke-width="3" opacity=".8"/><circle r="15" fill="#25374b"/><circle r="7" fill="#0a1322"/></g><g transform="translate(-282 107)"><rect x="-49" y="-38" width="98" height="76" rx="16" fill="#0b1423"/><rect x="-38" y="-35" width="76" height="70" rx="13" fill="#172337"/><path d="M-41-20v40m82-40v40" stroke="#455267" stroke-width="3" stroke-linecap="round"/><path d="M-34-30h68" stroke="#88d7e7" stroke-width="3" opacity=".8"/><circle r="15" fill="#25374b"/><circle r="7" fill="#0a1322"/></g><g transform="translate(264 -108)"><rect x="-49" y="-38" width="98" height="76" rx="16" fill="#0b1423"/><rect x="-38" y="-35" width="76" height="70" rx="13" fill="#172337"/><path d="M-41-20v40m82-40v40" stroke="#455267" stroke-width="3" stroke-linecap="round"/><path d="M-34-30h68" stroke="#88d7e7" stroke-width="3" opacity=".8"/><circle r="15" fill="#25374b"/><circle r="7" fill="#0a1322"/></g><g transform="translate(264 108)"><rect x="-49" y="-38" width="98" height="76" rx="16" fill="#0b1423"/><rect x="-38" y="-35" width="76" height="70" rx="13" fill="#172337"/><path d="M-41-20v40m82-40v40" stroke="#455267" stroke-width="3" stroke-linecap="round"/><path d="M-34-30h68" stroke="#88d7e7" stroke-width="3" opacity=".8"/><circle r="15" fill="#25374b"/><circle r="7" fill="#0a1322"/></g>
+<!-- Underfloor and curved sidepods -->
+<path d="M-319-42q42-30 112-58l132-10q101-4 167 42l90 47v42L92 68Q26 114-75 110l-132-10q-70-28-112-58z" fill="#111d30"/>
+<path d="m-291-44 72-30 135-19Q28-99 118-38l-33 19-123-7-128 16z" fill="#344156"/>
+<path d="m-291 44 72 30 135 19Q28 99 118 38L85 19l-123 7-128-16z" fill="#25364b"/>
+<path d="m-277-49 75-22 88-8-57 29-93 20zM-277 49l75 22 88 8-57-29-93-20z" fill="#ff8b1a"/>
+<path d="m-178-19 119-24 88 5 49 25v26L29 38l-88 5-119-24z" fill="#ff9221"/>
+<!-- Engine cover and narrow rear -->
+<path d="M-358-15h104l97-28 101-8q50 2 81 23v56q-31 21-81 23l-101-8-97-28h-104z" fill="#fe8a1a"/>
+<path d="m-262-15 107-25 102-1 44 16v50l-44 16-102-1-107-25z" fill="#26364b"/>
+<path d="m-245-14 93-22 95 1 29 9-123 7z" fill="#526076"/>
+<path d="m-256 15 105 15 115-3-17 14-102-1z" fill="#111f31"/>
+<path d="M-175-10h110m-110 7h90" stroke="#8b9aaa" stroke-width="3" opacity=".45"/>
+<!-- Rear wing -->
+<path d="M-395-115h40v230h-40z" fill="#ff9b24"/><path d="M-393-100h11v200h-11z" fill="#ffc15a"/><path d="M-403-119h56v11h-56zm0 227h56v11h-56z" fill="#17273d"/><text transform="translate(-363 43) rotate(-90)" fill="#142438" font-family="sans-serif" font-size="17" font-weight="800" letter-spacing="2">McLAREN</text>
+<!-- Cockpit / halo / helmet -->
+<path d="M2-39q40-32 81-7l41 29v34L83 46Q42 71 2 39z" fill="#0b1829"/>
+<path d="M3-42q32-24 68-10l52 33v38L71 52Q35 66 3 42" fill="none" stroke="#ffb547" stroke-width="9"/>
+<path d="M18-38q49-34 89 23m-89 53q49 34 89-23" stroke="#d27621" stroke-width="5" fill="none"/>
+<circle cx="58" r="24" fill="#b9df6b"/><path d="M40-13q18-13 35 0" stroke="#e2f6a7" stroke-width="5" fill="none"/><path d="M62-21q12 21 0 42" stroke="#1d4960" stroke-width="8" fill="none"/><path d="M28-2h-13" stroke="#6bcee6" stroke-width="5"/>
+<!-- Front nose and front wing -->
+<path d="M120-20q49-8 81-28l78 21 75 12v30l-75 12-78 21q-32-20-81-28z" fill="#ff9b25"/><path d="m129-17 73-21 72 21 80 9v8H129z" fill="#ffba4d"/><path d="M201-20h22l-9 37h-12l5-24h-10z" fill="#17273c"/>
+<path d="M346-127q34 8 57 35V92q-23 27-57 35l-11-23 12-39V-65l-12-39z" fill="#1a2a40"/><path d="M349-124q25 6 39 20v208q-14 14-39 20l-7-15q20-14 28-34V-75q-8-20-28-34z" fill="#ff8b1c"/><path d="M360-90h30m-30 17h30m-30 146h30m-30 17h30" stroke="#ffba53" stroke-width="5"/>
+<path d="M338-44v88" stroke="#e4edf0" stroke-width="3" opacity=".65"/>
+<path d="M-90 61q23 0 40-12-4 15-32 23z" fill="#8cd4e7"/>
+<text x="-220" y="6" fill="#f8f5e9" font-family="sans-serif" font-size="17" font-weight="700">McLaren</text>
+</g></defs>
+<path fill="url(#intro-asphalt)" d="M0 0h1200v620H0z"/>
+<!-- Only the pit box. No circuit, scenery or buildings. -->
+<g fill="none" stroke="#e3b453" stroke-width="7" stroke-linecap="square"><path d="M208 176v-38h267m246 0h276v38M208 444v38h267m246 0h276v-38"/><path d="M164 292h28m820 0h28" stroke-width="4" opacity=".55"/></g>
+<path d="M70 0v620" stroke="#71cbc4" stroke-width="4" opacity=".42"/><path d="M86 0v620" stroke="#a6d7d4" stroke-width="1" opacity=".2"/>
+<g class="pitbox-crew is-animated">
+<g transform="translate(345 73) rotate(0)"><g class="pit-mechanic tyre" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/><g transform="translate(0 42)"><rect x="-26" y="-17" width="52" height="37" rx="11" fill="#0d1728"/><ellipse rx="13" ry="18" fill="#27374c"/><path d="M-21-8v21m42-21v21" stroke="#4a5264" stroke-width="2"/></g></g></g><g transform="translate(413 87) rotate(0)"><g class="pit-mechanic gun" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/><path d="M26 31h24m-8-5v14" stroke="#90cfdf" stroke-width="6" stroke-linecap="round"/></g></g><g transform="translate(807 87) rotate(0)"><g class="pit-mechanic gun" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/><path d="M26 31h24m-8-5v14" stroke="#90cfdf" stroke-width="6" stroke-linecap="round"/></g></g><g transform="translate(875 73) rotate(0)"><g class="pit-mechanic tyre" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/><g transform="translate(0 42)"><rect x="-26" y="-17" width="52" height="37" rx="11" fill="#0d1728"/><ellipse rx="13" ry="18" fill="#27374c"/><path d="M-21-8v21m42-21v21" stroke="#4a5264" stroke-width="2"/></g></g></g>
+<g transform="translate(345 547) rotate(180)"><g class="pit-mechanic tyre" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/><g transform="translate(0 42)"><rect x="-26" y="-17" width="52" height="37" rx="11" fill="#0d1728"/><ellipse rx="13" ry="18" fill="#27374c"/><path d="M-21-8v21m42-21v21" stroke="#4a5264" stroke-width="2"/></g></g></g><g transform="translate(413 533) rotate(180)"><g class="pit-mechanic gun" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/><path d="M26 31h24m-8-5v14" stroke="#90cfdf" stroke-width="6" stroke-linecap="round"/></g></g><g transform="translate(807 533) rotate(180)"><g class="pit-mechanic gun" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/><path d="M26 31h24m-8-5v14" stroke="#90cfdf" stroke-width="6" stroke-linecap="round"/></g></g><g transform="translate(875 547) rotate(180)"><g class="pit-mechanic tyre" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/><g transform="translate(0 42)"><rect x="-26" y="-17" width="52" height="37" rx="11" fill="#0d1728"/><ellipse rx="13" ry="18" fill="#27374c"/><path d="M-21-8v21m42-21v21" stroke="#4a5264" stroke-width="2"/></g></g></g>
+<g transform="translate(115 310) rotate(-90)"><g class="pit-mechanic jack" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/></g></g><g transform="translate(1105 310) rotate(90)"><g class="pit-mechanic front-jack" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/></g></g>
+<g transform="translate(603 60) rotate(0)"><g class="pit-mechanic chief" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/></g></g><g transform="translate(603 560) rotate(180)"><g class="pit-mechanic chief" style="--crew-delay:0ms"><ellipse cx="4" cy="9" rx="27" ry="18" fill="#101a2c" opacity=".35"/><path d="M-13 13l-8 18m34-18 8 18" stroke="#111d30" stroke-width="12" stroke-linecap="round"/><path d="M-21-3q-17 1-18 21m60-21q17 1 18 21" fill="none" stroke="#ff8b20" stroke-width="13" stroke-linecap="round"/><path d="M-39 17v8m78-8v8" stroke="#152237" stroke-width="10" stroke-linecap="round"/><rect x="-23" y="-12" width="46" height="40" rx="14" fill="#fb8418"/><path d="M-16-12h32v32h-32z" fill="#1c293e"/><path d="M-23 15h46v6h-46z" fill="#ffb553"/><circle cy="-11" r="20" fill="#ff9c2a"/><path d="M-17-11q17-18 34 0" fill="none" stroke="#ffc477" stroke-width="4" stroke-linecap="round"/><path d="M-16-2q16 14 32 0" fill="none" stroke="#17283d" stroke-width="9"/><circle cx="-18" cy="-9" r="5" fill="#26344a"/><circle cx="18" cy="-9" r="5" fill="#26344a"/></g></g>
+</g>
+<!-- A small overhead wheel-gun boom, kept at the edge of the box. -->
+<g fill="none" stroke-linecap="round"><path d="M143 20v580m909-580v580" stroke="#19233a" stroke-width="18"/><path d="M143 20v580m909-580v580" stroke="#6472a6" stroke-width="10"/><path d="M143 56 467 74 603 122" stroke="#8a8ec5" stroke-width="8"/><path d="M143 56 467 74 603 122" stroke="#c1b2de" stroke-width="2"/><path d="M143 95v-24m909 455v-24" stroke="#ff9522" stroke-width="16"/><path d="M471 77 411 161m639-60-209 61" stroke="#b7c3db" stroke-width="1.4" opacity=".65"/></g>
+<g id="intro-car" class="pitbox-car" transform="translate(-700 310)"><use href="#intro-car-shape"/></g>
+</svg></div><div class="intro-credit"><span>A QUICK PIT STOP.</span><span>MAKE YOURSELF AT HOME.</span></div><div class="intro-track"></div></section><div id="toast" class="toast" role="status" hidden></div></body></html>

@@ -1,0 +1,6 @@
+function pacificParts(date){return Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(date).filter(x=>x.type!=='literal').map(x=>[x.type,Number(x.value)]));}
+function wallStamp(p){return Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second);}
+export function fromPacificWall(stamp){let actual=stamp;for(let n=0;n<4;n++){const offset=wallStamp(pacificParts(new Date(actual)))-actual;actual=stamp-offset;}return new Date(actual);}
+export const weekMs=7*24*60*60*1000;export const anchor=Date.UTC(2025,2,19,19);
+export function weekState(now=new Date()){const week=Math.max(0,Math.floor((wallStamp(pacificParts(now))-anchor)/weekMs));return {week,next:fromPacificWall(anchor+(week+1)*weekMs)};}
+export function pairsFor(members,week){if(members.length<2)return members.length?[[members[0]]]:[];const names=[...members],extra=names.length%2?names.pop():null;const fixed=names.shift(),offset=((week%(names.length))+names.length)%names.length;const circle=[fixed,...names.slice(offset),...names.slice(0,offset)];const pairs=[];for(let i=0;i<circle.length/2;i++)pairs.push([circle[i],circle[circle.length-1-i]]);if(extra)pairs[(week*7)%pairs.length].push(extra);return pairs;}
