@@ -36,8 +36,6 @@ The intro automatically plays on every Home page load, including reloads and ret
 
 Eight original posts were imported from the deployed androochen.com bundle. Both posts sharing the original January 20, 2023 ID now have distinct slug URLs. Old `/#/post/:id` links redirect, preserving the old site's last-match behavior for the duplicated ID. `/#/about` and `/#/prayer-partners` also redirect.
 
-The anime link is omitted. GitHub, LinkedIn, Goodreads, and IMDb links are retained. About uses clearly labeled placeholder text.
-
 Prayer pairings retain the deployed site's roster order, circle rotation algorithm, fixed first member, and rotating third person. Rotation boundaries now consistently use Wednesday at 7 PM in America/Los_Angeles, including daylight-saving transitions. The expanded schedule shows the upcoming 22 weeks (the old site showed a fixed historical 22-week schedule). The visible week number retains the March 19, 2025 anchor.
 
 The production site is hosted from `AndrooTheChen/androo-site-2` on GitHub Pages. The original `androo-site` application source is preserved. Its custom-domain association moves to this repository; its old application files are not replaced. The private Sites preview remains separate and is rebuilt through ChatGPT when requested.
