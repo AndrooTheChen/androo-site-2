@@ -6,3 +6,46 @@
 .skip-content{position:absolute;top:-90px;left:20px;z-index:110;padding:12px 18px;background:var(--ink);color:#fff;border-radius:6px}.skip-content:focus{top:12px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 #main:focus{outline:none}.intro.running .crew-upper{animation:crew-upper 5.4s both}.intro.running .crew-lower{animation:crew-lower 5.4s both}.intro.running .crew-left{animation:crew-left 5.4s both}.intro.running .crew-right{animation:crew-right 5.4s both}.intro .animated-crew{animation-duration:5.4s}.intro-track{animation-duration:7.6s}@keyframes crew-upper{0%,24%,78%,100%{transform:translateY(-8px)}35%,64%{transform:translateY(12px)}}@keyframes crew-lower{0%,24%,78%,100%{transform:translateY(8px)}35%,64%{transform:translateY(-12px)}}@keyframes crew-left{0%,24%,78%,100%{transform:translateX(-8px)}35%,64%{transform:translateX(12px)}}@keyframes crew-right{0%,24%,78%,100%{transform:translateX(8px)}35%,64%{transform:translateX(-12px)}}
 @media(max-width:580px){.intro-copy{top:11%;right:18px;font-size:76px}.intro-copy.swap{font-size:58px;letter-spacing:-3px}}
+
+/* Navigation stays visible while scrolling and throughout the intro. */
+.site-header{position:sticky;top:0;z-index:110;background:var(--paper)}
+html{scroll-padding-top:110px}
+@media(max-width:580px){.site-header{flex-wrap:nowrap;gap:16px}nav{display:flex;position:static;padding:0;border:0;background:transparent;gap:18px;flex-wrap:nowrap}nav a{font-size:12px}.brand{font-size:20px;gap:8px}.brand-mark{width:28px;height:28px;font-size:21px}}
+@media(max-width:360px){nav{gap:12px}.brand{font-size:18px;gap:6px}}
+
+/* Keep every navigation link at the top, including former footer links. */
+.site-header{height:auto;min-height:104px;flex-shrink:0;padding-top:12px;padding-bottom:12px}
+#main-nav{display:flex;position:static;flex-wrap:wrap;justify-content:flex-end;gap:8px 26px;padding:0;border:0}
+#main-nav a{white-space:nowrap}
+@media(max-width:900px){.site-header{flex-wrap:wrap;gap:8px;padding-top:16px;padding-bottom:16px}#main-nav{width:100%;justify-content:flex-start;gap:0 22px}#main-nav a{font-size:12px;padding:6px 0}html{scroll-padding-top:150px}}
+@media(max-width:580px){#main-nav{gap:0 20px}.site-header{min-height:78px}}
+
+/* Shared navy, cream and papaya palette across every route. */
+:root{color-scheme:dark;--paper:#1e2b43;--ink:#f9f4e8;--muted:#b3bfd0;--coral:#ff9b26;--line:#ffffff20;--green:#ffb553;--surface:#26364d;--surface-deep:#172338}
+body{min-height:100svh}
+.site-header{background:var(--paper);border:0;min-height:90px}
+.brand-mark{background:#ff9221;color:#17273e}
+nav a:hover,.text-link:hover,.post-row:hover h3,.blog-row:hover h2,.links-list a:hover,.back-link:hover{color:#ffb953}
+.page-head h1 em{font-family:inherit;font-style:normal;font-weight:inherit;letter-spacing:inherit}
+.page-head .eyebrow,.blog-row .arrow{color:var(--coral)}
+.filter.active{background:var(--coral);border-color:var(--coral);color:var(--paper)}
+.filter:hover,.search:hover{border-color:#ffffff60}
+.search{background:var(--surface-deep)}
+.search::placeholder{color:var(--muted)}
+.about-illustration,.partner-pair{background:var(--surface)}
+.placeholder-label{background:#ff9b2618;color:#ffc477}
+.article-body a{color:#ffc477}
+.article-body pre{background:var(--surface-deep);color:var(--ink);border:1px solid var(--line)}
+.article-body code{background:var(--surface);color:#ffd498}
+.article-body pre code{background:none;color:inherit}
+.article-body blockquote,.countdown-box{background:var(--surface)}
+.button{background:var(--coral);border-color:var(--coral);color:var(--paper)}
+.button:hover{background:#ffb553;color:var(--paper)}
+.button.secondary{background:transparent;border-color:#ff9b2680;color:var(--ink)}
+.button.secondary:hover{background:#ff9b2615;color:#ffc477}
+.toast{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.noscript-note{background:var(--surface)}
+#copy-fallback{background:var(--surface-deep);color:var(--ink)}
+.skip-content{background:var(--coral);color:var(--paper)}
+button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline-color:#ffc477}
+@media(max-width:580px){.site-header{min-height:78px}}

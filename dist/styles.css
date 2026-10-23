@@ -7,55 +7,68 @@
 #main:focus{outline:none}.intro.running .crew-upper{animation:crew-upper 5.4s both}.intro.running .crew-lower{animation:crew-lower 5.4s both}.intro.running .crew-left{animation:crew-left 5.4s both}.intro.running .crew-right{animation:crew-right 5.4s both}.intro .animated-crew{animation-duration:5.4s}.intro-track{animation-duration:7.6s}@keyframes crew-upper{0%,24%,78%,100%{transform:translateY(-8px)}35%,64%{transform:translateY(12px)}}@keyframes crew-lower{0%,24%,78%,100%{transform:translateY(8px)}35%,64%{transform:translateY(-12px)}}@keyframes crew-left{0%,24%,78%,100%{transform:translateX(-8px)}35%,64%{transform:translateX(12px)}}@keyframes crew-right{0%,24%,78%,100%{transform:translateX(8px)}35%,64%{transform:translateX(-12px)}}
 @media(max-width:580px){.intro-copy{top:11%;right:18px;font-size:76px}.intro-copy.swap{font-size:58px;letter-spacing:-3px}}
 
-/* A close-up pit box, rather than an illustrated landscape. */
+/* Navigation stays visible while scrolling and throughout the intro. */
+.site-header{position:sticky;top:0;z-index:110;background:var(--paper)}
+html{scroll-padding-top:110px}
+@media(max-width:580px){.site-header{flex-wrap:nowrap;gap:16px}nav{display:flex;position:static;padding:0;border:0;background:transparent;gap:18px;flex-wrap:nowrap}nav a{font-size:12px}.brand{font-size:20px;gap:8px}.brand-mark{width:28px;height:28px;font-size:21px}}
+@media(max-width:360px){nav{gap:12px}.brand{font-size:18px;gap:6px}}
+
+/* Keep every navigation link at the top, including former footer links. */
+.site-header{height:auto;min-height:104px;flex-shrink:0;padding-top:12px;padding-bottom:12px}
+#main-nav{display:flex;position:static;flex-wrap:wrap;justify-content:flex-end;gap:8px 26px;padding:0;border:0}
+#main-nav a{white-space:nowrap}
+@media(max-width:900px){.site-header{flex-wrap:wrap;gap:8px;padding-top:16px;padding-bottom:16px}#main-nav{width:100%;justify-content:flex-start;gap:0 22px}#main-nav a{font-size:12px;padding:6px 0}html{scroll-padding-top:150px}}
+@media(max-width:580px){#main-nav{gap:0 20px}.site-header{min-height:78px}}
+
+/* Shared navy, cream and papaya palette across every route. */
+:root{color-scheme:dark;--paper:#1e2b43;--ink:#f9f4e8;--muted:#b3bfd0;--coral:#ff9b26;--line:#ffffff20;--green:#ffb553;--surface:#26364d;--surface-deep:#172338}
+body{min-height:100svh}
+.site-header{background:var(--paper);border:0;min-height:90px}
+.brand-mark{background:#ff9221;color:#17273e}
+nav a:hover,.text-link:hover,.post-row:hover h3,.blog-row:hover h2,.links-list a:hover,.back-link:hover{color:#ffb953}
+.page-head h1 em{font-family:inherit;font-style:normal;font-weight:inherit;letter-spacing:inherit}
+.page-head .eyebrow,.blog-row .arrow{color:var(--coral)}
+.filter.active{background:var(--coral);border-color:var(--coral);color:var(--paper)}
+.filter:hover,.search:hover{border-color:#ffffff60}
+.search{background:var(--surface-deep)}
+.search::placeholder{color:var(--muted)}
+.about-illustration,.partner-pair{background:var(--surface)}
+.placeholder-label{background:#ff9b2618;color:#ffc477}
+.article-body a{color:#ffc477}
+.article-body pre{background:var(--surface-deep);color:var(--ink);border:1px solid var(--line)}
+.article-body code{background:var(--surface);color:#ffd498}
+.article-body pre code{background:none;color:inherit}
+.article-body blockquote,.countdown-box{background:var(--surface)}
+.button{background:var(--coral);border-color:var(--coral);color:var(--paper)}
+.button:hover{background:#ffb553;color:var(--paper)}
+.button.secondary{background:transparent;border-color:#ff9b2680;color:var(--ink)}
+.button.secondary:hover{background:#ff9b2615;color:#ffc477}
+.toast{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.noscript-note{background:var(--surface)}
+#copy-fallback{background:var(--surface-deep);color:var(--ink)}
+.skip-content{background:var(--coral);color:var(--paper)}
+button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline-color:#ffc477}
+@media(max-width:580px){.site-header{min-height:78px}}
+
+/* A single persistent pit box for the intro and the landing page. */
 body[data-home]{background:#1e2b43;color:#f9f4e8;--ink:#f9f4e8;--muted:#9faec2;--line:#ffffff16;--coral:#ff9b26}
 body[data-home] #site-content{max-width:none;min-height:100svh;padding:0 4.6vw;display:flex;flex-direction:column}
-body[data-home] .site-header{height:90px;flex-shrink:0;border:0;z-index:4}
-body[data-home] .brand-mark,.intro .brand-mark{background:#ff9221;color:#17273e}
+body[data-home] .site-header{min-height:90px;height:auto;flex-shrink:0;border:0;background:#1e2b43}
+body[data-home] .brand-mark{background:#ff9221;color:#17273e}
 body[data-home] .brand-dot{color:#ff9b26}
+body[data-home] nav{background:transparent}
 body[data-home] nav a:hover{color:#ffb44d}
-body[data-home] #main{flex:1;display:flex;flex-direction:column;justify-content:center}
-body[data-home] .colophon{padding:19px 0 24px;font-size:10px;border-top:1px solid #ffffff12}
-body[data-home] .footer-links{gap:24px}
-body[data-home] .footer-note>.status-dot{display:none}
-.pitstop-landing{position:relative;display:flex;flex:1;flex-direction:column;justify-content:center}
+body[data-home] #main{flex:1;display:flex;flex-direction:column;min-height:0}
+.pitstop-landing{position:relative;display:grid;flex:1;grid-template-rows:minmax(0,1fr) 64px;min-height:420px}
 .pitbox-stage{position:relative;width:100%;max-width:1200px;margin:auto;aspect-ratio:1200/620;isolation:isolate}
+.landing-stage{max-height:calc(100svh - 170px)}
 .pitbox-art{width:100%;height:100%;display:block;overflow:visible;position:absolute;inset:0;z-index:1}
-.landing-stage{max-height:calc(100svh - 210px);min-height:350px}
-.landing-greeting{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 15%}
-.pit-kicker{font:600 9px/1.5 monospace;letter-spacing:3.6px;color:#a8b7cb;margin-bottom:12px}
+.landing-greeting{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 15%}
 .landing-greeting h1{font:700 clamp(52px,7.8vw,108px)/1.03 Manrope,sans-serif;letter-spacing:-5px;margin:0;white-space:nowrap;color:#faf7ee}
-.papaya-dot{color:#ff9c26;display:inline!important}
-.landing-greeting p{font-size:14px;color:#b3bfd0;margin:15px 0 23px;line-height:1.5}
-.landing-links{display:flex;gap:30px;justify-content:center;pointer-events:auto}
-.landing-links a{font-size:11px;color:#fff1d8;display:flex;gap:16px;align-items:center;padding-bottom:4px;border-bottom:1px solid #ffffff40}
-.landing-links a:hover{color:#ffb953;border-color:#ffb953}
-.landing-bottom{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:10px auto 24px;width:100%;max-width:1200px;color:#8394ad;font:9px/1.5 monospace;letter-spacing:1.8px}
-.pit-replay{border:0;background:none;color:#b9c6d9;font:11px/1.6 'DM Sans',sans-serif;letter-spacing:0;padding:9px 0;display:flex;align-items:center;gap:9px}
-.pit-replay:hover{color:#ffb953}
-.pitbox-intro.intro{background:#1e2b43;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.pitbox-intro .intro-stage{width:calc(100vw - 9.2vw);max-width:1200px;max-height:calc(100svh - 210px);min-height:350px;flex:none;margin:90px auto 110px}
-.pitbox-intro .intro-copy,.pitbox-intro .intro-copy.swap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;padding:0 14%;font:700 clamp(62px,9vw,130px)/1 Manrope,sans-serif;letter-spacing:-5px;text-shadow:none;pointer-events:none;color:#faf7ee;opacity:1;transition:opacity .18s;white-space:nowrap}
-.pitbox-intro .intro-copy.swap{font-size:clamp(52px,7.8vw,108px)}
-.pitbox-intro.text-hidden .intro-copy{opacity:0}
-.pitbox-intro .intro-copy .greeting{animation:none;transform:none}
-.pitbox-intro .intro-copy.swap .greeting{animation:pit-text-appear .4s both}
-.pitbox-intro .intro-chrome{top:0;left:4.6vw;right:4.6vw;height:90px;color:#fff5e4}
-.pitbox-intro .intro-chrome .brand{font-size:24px}
-.pitbox-intro .skip-intro{background:transparent;border:1px solid #ffffff30;color:#ecf0f5;padding:8px 16px;border-radius:6px;font-size:11px}
-.pitbox-intro .skip-intro:hover{border-color:#ffb553;color:#ffb553}
-.pitbox-intro .intro-credit{left:4.6vw;right:4.6vw;bottom:28px;color:#8394ad;font-size:9px;letter-spacing:1.8px}
-.pitbox-intro .intro-track{background:#ff9221;height:2px}
-.pitbox-car{filter:none}
-
-
-@keyframes pit-mechanic{0%,22%,83%,100%{transform:translateY(0)}34%,65%{transform:translateY(96px)}}
-@keyframes pit-chief{0%,22%,83%,100%{transform:translateY(0)}34%,65%{transform:translateY(12px)}}
-@keyframes pit-text-appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-/* Full car remains in frame on phones; portrait space holds the controls. */
-@media(max-width:800px){.landing-greeting h1{font-size:clamp(42px,7.7vw,66px);letter-spacing:-3px}.landing-greeting p{font-size:11px;margin:12px 0 18px}.pit-kicker{font-size:8px;letter-spacing:2px}.landing-links{gap:22px}.landing-links a{font-size:10px;gap:9px}.pitbox-intro .intro-copy{font-size:clamp(62px,11vw,90px)}.pitbox-intro .intro-copy.swap{font-size:clamp(42px,7.7vw,66px);letter-spacing:-3px}}
-@media(max-width:580px){body[data-home] #site-content{padding:0 22px}body[data-home] .site-header{height:78px}body[data-home] .menu-button{color:#f7f0e4;border-color:#ffffff30;font-size:12px}body[data-home] nav{background:#1e2b43;border-color:#ffffff20}body[data-home] .colophon{font-size:9px;gap:10px;padding-bottom:18px}body[data-home] .footer-links{font-size:10px;gap:23px}.landing-stage{max-height:none;min-height:0;aspect-ratio:1.05;overflow:visible}.landing-stage .pitbox-art{height:auto;top:50%;transform:translateY(-50%)}.landing-greeting{padding:0 3%;justify-content:center}.landing-greeting h1{font-size:clamp(31px,9vw,43px);letter-spacing:-1.8px}.pit-kicker{font-size:7px;letter-spacing:2.1px;margin:0 0 11px}.landing-greeting p{font-size:10px;margin:11px 0 15px}.landing-links{gap:20px}.landing-links a{font-size:9px;gap:9px}.landing-bottom{font-size:7px;letter-spacing:.9px;margin-top:0;margin-bottom:22px;gap:14px}.pit-replay{font-size:10px;gap:6px}.pitbox-intro .intro-stage{width:calc(100vw - 44px);min-height:0;max-height:none;aspect-ratio:1.05;margin:78px auto 104px}.pitbox-intro .pitbox-art{height:auto;top:50%;transform:translateY(-50%)}.pitbox-intro .intro-copy,.pitbox-intro .intro-copy.swap{inset:0;right:0;top:0;padding:0;letter-spacing:-2px;white-space:nowrap;font-size:clamp(34px,9vw,43px)}.pitbox-intro .intro-copy:not(.swap){font-size:64px}.pitbox-intro .intro-chrome{left:22px;right:22px;top:0;height:78px}.pitbox-intro .intro-chrome .brand{font-size:22px}.pitbox-intro .intro-credit{left:22px;right:22px;font-size:7px;bottom:24px}.pitbox-intro .skip-intro{font-size:10px;padding:7px 10px}.pitstop-landing{min-height:440px;justify-content:center}}
-@media(prefers-reduced-motion:reduce){.pitbox-intro:not(.manual-replay){display:none}.pitbox-intro *{animation:none!important;transition:none!important}}
-@media(max-width:580px){.landing-greeting .pit-kicker{display:none}.landing-greeting p{font-size:9px;margin:7px 0 12px}}
-
-.pitbox-intro.intro[hidden]{display:none!important}
+.papaya-dot{color:#ff9c26}
+.landing-bottom{display:flex;align-items:center;justify-content:flex-end;width:100%;max-width:1200px;margin:0 auto;padding-bottom:18px}
+.intro-control{border:0;border-radius:0;background:transparent;color:#b9c6d9;font:12px/1.6 'DM Sans',sans-serif;padding:12px 0;min-width:82px;text-align:right}
+.intro-control:hover{color:#ffb953;text-decoration:underline;text-underline-offset:4px}
+.intro-control[hidden],.pitbox-car[hidden]{display:none!important}
+@media(max-width:800px){.landing-greeting h1{font-size:clamp(42px,7.7vw,66px);letter-spacing:-3px}}
+@media(max-width:580px){body[data-home] #site-content{padding:0 22px}body[data-home] .site-header{min-height:78px}.landing-stage{max-height:none;aspect-ratio:1.05}.landing-stage .pitbox-art{height:auto;top:50%;transform:translateY(-50%)}.landing-greeting{padding:0 3%}.landing-greeting h1{font-size:clamp(31px,9vw,43px);letter-spacing:-1.8px}.landing-bottom{padding-bottom:18px}.pitstop-landing{min-height:420px}}

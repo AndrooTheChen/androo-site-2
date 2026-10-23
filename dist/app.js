@@ -1,26 +1,41 @@
 import {weekState, pairsFor, fromPacificWall, weekMs, anchor} from './rotation.mjs';
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const safeSession={get(k){try{return sessionStorage.getItem(k)}catch{return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch{}}};
 $$('[data-year]').forEach(el=>el.textContent=new Date().getFullYear());
-const menu=$('.menu-button'),nav=$('#main-nav');
-menu?.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');nav.classList.toggle('open',open);});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&nav?.classList.contains('open')){nav.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.setAttribute('aria-label','Open navigation');menu.focus();}});
 // Retain the old site's hash links, including /post/:id, after migration.
 async function resolveLegacy(){const h=location.hash;if(!h.startsWith('#/'))return;let target=h.slice(1);if(target.startsWith('/post/')){try{const res=await fetch('/legacy-posts.json');if(!res.ok)throw Error();const map=await res.json();target=map[target.split('/')[2]]||'/404/';}catch{return;}}else if(target!=='/')target=target.replace(/\/$/,'')+'/';location.replace(target);}
 resolveLegacy();
-const intro=$('#intro'),content=$('#site-content');let timers=[],previousFocus=null,closeTimer,animationFrame;
+// One persistent SVG keeps the pit box and crew anchored through every state.
+const intro=$('#intro'),replay=$('[data-replay]'),skip=$('.skip-intro');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-function finishIntro(){cancelAnimationFrame(animationFrame);if(intro.hidden||intro.classList.contains('leaving'))return;timers.forEach(clearTimeout);timers=[];safeSession.set('andrew-pitbox-intro-seen','1');intro.classList.add('leaving');content.inert=false;document.body.classList.remove('intro-open');(previousFocus||$('#main')).focus({preventScroll:true});closeTimer=setTimeout(()=>{intro.hidden=true;intro.classList.remove('running');},550);}
-function startIntro(manual=false){clearTimeout(closeTimer);cancelAnimationFrame(animationFrame);if(reduced.matches){if(manual){$('#main').focus({preventScroll:true});}return;}
- previousFocus=manual?document.activeElement:null;timers.forEach(clearTimeout);timers=[];
- intro.hidden=false;intro.classList.remove('leaving','running','text-hidden','is-pitted');$('.intro-copy').classList.remove('swap');$('.greeting').innerHTML='hello<span class="papaya-dot">.</span>';
- content.inert=true;document.body.classList.add('intro-open');$('.skip-intro').focus({preventScroll:true});
- const progress=$('.intro-track');progress.style.animation='none';void progress.offsetWidth;progress.style.animation='';
- const car=$('#intro-car'),copy=$('.intro-copy'),crew=$$('.pit-mechanic',intro),started=performance.now();
+let animationFrame;
+function finishIntro(){
+ if(!intro?.classList.contains('playing'))return;
+ cancelAnimationFrame(animationFrame);
+ const restoreFocus=document.activeElement===skip;
+ intro.classList.remove('playing','is-pitted');intro.dataset.phase='andrew';
+ $('#intro-car').setAttribute('hidden','');
+ $$('.pit-mechanic',intro).forEach(el=>el.removeAttribute('transform'));
+ const copy=$('.landing-greeting');copy.style.visibility='visible';copy.removeAttribute('aria-hidden');
+ $('.greeting').innerHTML='I’m Andrew<span class="papaya-dot">.</span>';
+ skip.hidden=true;replay.hidden=false;
+ if(restoreFocus)replay.focus({preventScroll:true});
+}
+function startIntro(){
+ if(!intro||reduced.matches)return;
+ cancelAnimationFrame(animationFrame);
+ intro.classList.add('playing');
+ const car=$('#intro-car'),copy=$('.landing-greeting'),crew=$$('.pit-mechanic',intro),started=performance.now();
+ car.removeAttribute('hidden');car.setAttribute('transform','translate(-700 310)');
+ crew.forEach(el=>el.removeAttribute('transform'));
+ copy.style.visibility='visible';copy.removeAttribute('aria-hidden');
+ $('.greeting').innerHTML='hello<span class="papaya-dot">.</span>';
+ const restoreFocus=document.activeElement===replay;
+ replay.hidden=true;skip.hidden=false;
+ if(restoreFocus)skip.focus({preventScroll:true});
  const clamp=v=>Math.min(1,Math.max(0,v));
  const ease=v=>v*v*(3-2*v);
- copy.style.visibility='visible';
+ let greetingSwapped=false;
  function frame(now){
   const t=(now-started)/1000;
   const enter=clamp((t-.5)/1.5),leave=clamp((t-4)/1.6);
@@ -29,29 +44,27 @@ function startIntro(manual=false){clearTimeout(closeTimer);cancelAnimationFrame(
   const move=t<2?ease(clamp((t-1.1)/.9)):1-ease(clamp((t-3.65)/.8));
   crew.forEach(el=>{
    if(el.classList.contains('front-jack')){
-    // Local X points down the screen because this mechanic faces left.
-    // Clear the full car width by 3.8s, before the car accelerates at 4s.
-    const stepAside=ease(clamp((t-3.15)/.65));
+    // Step out of the car's path, then return after the car has fully left.
+    const stepAside=ease(clamp((t-3.15)/.65))*(1-ease(clamp((t-5.6)/.7)));
     el.setAttribute('transform',`translate(${(220*stepAside).toFixed(2)} ${(move*96*(1-stepAside)).toFixed(2)})`);
    }else{
     el.setAttribute('transform',`translate(0 ${(move*(el.classList.contains('chief')?12:96)).toFixed(2)})`);
    }
   });
-  const textVisible=t<1.45||t>=5.9;
-  copy.style.visibility=textVisible?'visible':'hidden';
-  copy.setAttribute('aria-hidden',String(!textVisible));
   intro.classList.toggle('is-pitted',t>=2&&t<4);
-  intro.dataset.phase=t<.5?'hello':t<2?'arriving':t<4?'pitted':t<5.9?'leaving':'andrew';
-  if(t>=5.9&&!copy.classList.contains('swap')){copy.classList.add('swap');$('.greeting').innerHTML='I’m Andrew<span class="papaya-dot">.</span>';}
+  intro.dataset.phase=t<.5?'hello':t<2?'arriving':t<4?'pitted':t<6.4?'leaving':'andrew';
+  // Swap once while the stationary car covers the greeting.
+  if(t>=2.4&&!greetingSwapped){$('.greeting').innerHTML='I’m Andrew<span class="papaya-dot">.</span>';greetingSwapped=true;}
   if(t>=7.6){finishIntro();return;}
   animationFrame=requestAnimationFrame(frame);
  }
  animationFrame=requestAnimationFrame(frame);
 }
-$('.skip-intro')?.addEventListener('click',finishIntro);
-$$('[data-replay]').forEach(b=>b.addEventListener('click',()=>startIntro(true)));
-document.addEventListener('keydown',e=>{if(!intro.hidden&&!intro.classList.contains('leaving')){if(e.key==='Escape'){e.preventDefault();finishIntro();}if(e.key==='Tab'){e.preventDefault();$('.skip-intro').focus();}}});
-if(document.body.dataset.home&&!location.hash.startsWith('#/')&&!safeSession.get('andrew-pitbox-intro-seen')&&!reduced.matches)startIntro();
+skip?.addEventListener('click',finishIntro);
+replay?.addEventListener('click',startIntro);
+$$('.site-header a, .skip-content').forEach(link=>link.addEventListener('click',finishIntro));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&intro?.classList.contains('playing')){e.preventDefault();finishIntro();}});
+if(intro&&!location.hash.startsWith('#/'))startIntro();
 reduced.addEventListener('change',e=>{if(e.matches)finishIntro();});
 // Blog search and category filtering work together, with a visible empty state.
 const search=$('.search'),rows=$$('.blog-row');let category='All';

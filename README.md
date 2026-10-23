@@ -17,7 +17,7 @@ author: "androo"
 Write Markdown here. Links, images, lists, tables, code blocks, and HTML embeds are supported.
 ```
 
-3. Run `npm install` once, then `npm run build`. Publish the contents of `dist/` on a static host. Directory `index.html` files give each post a stable URL. Custom hosting should serve `404.html` for missing pages.
+3. Commit the Markdown file to `main` in `AndrooTheChen/androo-site-2`. GitHub Actions installs dependencies, builds and checks the site, and publishes `dist/` to GitHub Pages automatically. Directory `index.html` files give each post a stable URL. The GitHub Pages settings use GitHub Actions as the publishing source and `androochen.com` as the custom domain. Local preview: run `npm ci`, then `npm run build`, and serve `dist/` with any static server.
 
 Only trusted authors should edit Markdown: raw HTML is intentionally supported to preserve the original YouTube embed. No visitor-submitted Markdown is processed.
 
@@ -30,7 +30,7 @@ Only trusted authors should edit Markdown: raw HTML is intentionally supported t
 - Intro timing, search, weekly rotation: `src/app.js`. The car and crew animate using requestAnimationFrame and SVG transforms, with no video dependency.
 - Prayer roster: `content/prayer-partners.json`.
 
-The intro plays once per browser session, only on Home. The front-jack mechanic steps below the exit path before the car accelerates out of the box. Visitors can Skip, press Escape, or Replay. Reduced-motion preferences bypass it. Content is present without JavaScript; the intro, blog filters, and prayer rotation need JavaScript. Font requests use Google Fonts, with system fallbacks.
+The intro automatically plays on every Home page load, including reloads and return visits. The greeting stays behind the SVG so the car drives over and covers it. It changes once to “I’m Andrew” while the car is parked over it, then is revealed as the car drives away. Every page uses the same navy, cream, and papaya theme. GitHub and LinkedIn are available on About only. Home, About, Blog, and Prayer Partners stay visible in the top navigation, including on mobile and while the intro plays. There is no footer. The landing page uses one persistent SVG, so the pit box stays in the same place before, during, and after the intro. Skip intro and Replay intro occupy the same control position at the bottom. The car carries number 24; an accessible label replaces the SVG title to avoid a hover tooltip. The front-jack mechanic steps below the exit path before the car accelerates out of the box. Visitors can Skip, press Escape, or Replay. Reduced-motion preferences bypass it. Content is present without JavaScript; the intro, blog filters, and prayer rotation need JavaScript. Font requests use Google Fonts, with system fallbacks.
 
 ## Migration notes
 
@@ -40,7 +40,7 @@ The anime link is omitted. GitHub, LinkedIn, Goodreads, and IMDb links are retai
 
 Prayer pairings retain the deployed site's roster order, circle rotation algorithm, fixed first member, and rotating third person. Rotation boundaries now consistently use Wednesday at 7 PM in America/Los_Angeles, including daylight-saving transitions. The expanded schedule shows the upcoming 22 weeks (the old site showed a fixed historical 22-week schedule). The visible week number retains the March 19, 2025 anchor.
 
-This is a separate private deployment. The current androochen.com domain and hosting have not been changed. To replace the live site, deploy `dist/` to its existing hosting, or connect the domain to the new site and update DNS after making the site public.
+The production site is hosted from `AndrooTheChen/androo-site-2` on GitHub Pages. The original `androo-site` application source is preserved. Its custom-domain association moves to this repository; its old application files are not replaced. The private Sites preview remains separate and is rebuilt through ChatGPT when requested.
 
 ## Validation
 
