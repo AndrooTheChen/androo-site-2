@@ -1,6 +1,6 @@
 # Andrew's personal website
 
-A small static website: Home, About, Markdown blog, and the existing Prayer Partners rotation. Original SVG artwork and a silent overhead pit-stop intro; no video or animation downloads. Home is a standalone greeting with no blog-post previews. The close-up pit box uses a papaya-orange and charcoal McLaren car and matching crew, inspired by the supplied overhead references.
+A small static website: Home, About, Markdown blog, the existing Prayer Partners rotation, and Hetherau Crossing. Original SVG artwork and a silent overhead pit-stop intro; no video or animation downloads. Home is a standalone greeting with no blog-post previews. The close-up pit box uses a papaya-orange and charcoal McLaren car and matching crew, inspired by the supplied overhead references.
 
 ## Writing a post
 
@@ -17,7 +17,7 @@ author: "androo"
 Write Markdown here. Links, images, lists, tables, code blocks, and HTML embeds are supported.
 ```
 
-3. Commit the Markdown file to `main` in `AndrooTheChen/androo-site-2`. GitHub Actions installs dependencies, builds and checks the site, and publishes `dist/` to GitHub Pages automatically. Directory `index.html` files give each post a stable URL. The GitHub Pages settings use GitHub Actions as the publishing source and `androochen.com` as the custom domain. Local preview: run `npm ci`, then `npm run build`, and serve `dist/` with any static server.
+3. Commit the Markdown file to `main` in `AndrooTheChen/androo-site-2`. GitHub Actions installs dependencies, builds and checks the site, and publishes `dist/` to GitHub Pages automatically. Directory `index.html` files give each post a stable URL. The GitHub Pages settings use GitHub Actions as the publishing source and `androochen.com` as the custom domain. Local preview: run `npm ci` and `npm ci --prefix lantern_lane`, then `npm run build`, and serve `dist/` with any static server.
 
 Only trusted authors should edit Markdown: raw HTML is intentionally supported to preserve the original YouTube embed. No visitor-submitted Markdown is processed.
 
@@ -43,3 +43,14 @@ The production site is hosted from `AndrooTheChen/androo-site-2` on GitHub Pages
 ## Validation
 
 `npm run check` checks generated internal links, Markdown post counts, content omissions, and timezone-sensitive rotation boundaries. Browser QA covers the intro, skip/replay, navigation, blog search/filter/empty state, articles, and Prayer Partners expansion.
+
+## Hetherau Crossing
+
+The navigation link opens the full browser game in a new tab at `/lantern_lane/`. Its own source, procedural assets, character asset folder, locked dependencies, tests and documentation are isolated in [`lantern_lane/`](lantern_lane/README.md). The site does not iframe or depend on the private ChatGPT demo.
+
+- Game development: `npm run game:dev` (after installing both dependency sets above).
+- Full production build: `npm run build` builds both projects and places the game in `dist/lantern_lane/`.
+- Validation: `npm run check` checks the website and game rules/persistence/navigation.
+- Character model handoff: [`lantern_lane/docs/character-integration.md`](lantern_lane/docs/character-integration.md).
+
+Push to `main` to run the existing Pages workflow, which installs, builds, checks, and deploys both together. Progress is stored in each visitor’s browser. Export/import a save to transfer progress from the original demo origin.

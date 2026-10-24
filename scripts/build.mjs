@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {execFileSync} from 'node:child_process';
 import {marked} from 'marked';
 import {scene} from '../src/scene.mjs';
 const dist='dist';
@@ -16,7 +17,7 @@ const posts=fs.readdirSync('content/posts').filter(f=>f.endsWith('.md')).map(fil
 }).sort((a,b)=>b.date.localeCompare(a.date)||a.slug.localeCompare(b.slug));
 const date=(s,short=false)=>new Date(s+'T12:00:00Z').toLocaleDateString('en-US',{year:'numeric',month:short?'short':'long',day:'numeric',timeZone:'UTC'});
 const brand=`<span class="brand-mark" aria-hidden="true">a</span><span>androo<span class="brand-dot">.</span></span>`;
-function header(active){return `<header class="site-header"><a class="brand" href="/" aria-label="Andrew Chen — Home">${brand}</a><nav id="main-nav" aria-label="Main navigation">${[['Home','/'],['About','/about/'],['Blog','/blog/'],['Prayer Partners','/prayer-partners/']].map(([n,h])=>`<a href="${h}" ${h.startsWith('https:')?'target="_blank" rel="noopener noreferrer"':''} ${active===n?'aria-current="page"':''}>${n}</a>`).join('')}</nav></header>`;}
+function header(active){return `<header class="site-header"><a class="brand" href="/" aria-label="Andrew Chen — Home">${brand}</a><nav id="main-nav" aria-label="Main navigation">${[['Home','/'],['About','/about/'],['Blog','/blog/'],['Prayer Partners','/prayer-partners/'],['Hetherau Crossing','/lantern_lane/']].map(([n,h])=>`<a href="${h}" ${(h.startsWith('https:')||h==='/lantern_lane/')?'target="_blank" rel="noopener noreferrer"':''} ${h==='/lantern_lane/'?'aria-label="Hetherau Crossing (opens in a new tab)"':''} ${active===n?'aria-current="page"':''}>${n}</a>`).join('')}</nav></header>`;}
 function page({title,description,active,body,home=false,url=''}){return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#1e2b43"><meta name="description" content="${escape(description||'A little corner of the internet. Writing, building, and staying curious.')}"/><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description||'Writing, building, and staying curious.')}"><meta property="og:type" content="${active==='Blog'&&url!=='/blog/'?'article':'website'}"><title>${escape(title)} — Andrew Chen</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/styles.css"><script src="/app.js" type="module"></script></head><body${home?' data-home="true"':''}><a class="skip-content" href="#main">Skip to content</a><div id="site-content" class="shell">${header(active)}<main id="main" tabindex="-1">${body}</main></div><div id="toast" class="toast" role="status" hidden></div></body></html>`;}
 function write(route,html){const dir=path.join(dist,route);fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,'index.html'),html);}
 write('',page({title:'Hello, I’m Andrew',active:'Home',home:true,body:`<section id="intro" class="pitstop-landing" aria-labelledby="landing-title"><div class="pitbox-stage landing-stage"><div class="landing-greeting"><h1 id="landing-title" class="greeting">I’m Andrew<span class="papaya-dot">.</span></h1></div>${scene('home',true)}</div><div class="landing-bottom"><button class="intro-control skip-intro" hidden>Skip intro</button><button class="intro-control pit-replay" data-replay>Replay intro</button></div></section>`}));
@@ -36,4 +37,7 @@ const legacy={};for(const p of [...posts].reverse())legacy[p.legacy_id]=p.href;
 legacy['1674201600']='/blog/performance-reviews/';
 fs.writeFileSync('dist/legacy-posts.json',JSON.stringify(legacy));
 fs.writeFileSync('dist/robots.txt','User-agent: *\nAllow: /\n');
-console.log(`Built Home, About, Blog, Prayer Partners, 404, and ${posts.length} Markdown posts.`);
+// Keep the complete game isolated; only its compiled public files enter the website.
+execFileSync(process.platform==='win32'?'npm.cmd':'npm',['run','build'],{cwd:'lantern_lane',stdio:'inherit'});
+fs.cpSync('lantern_lane/dist','dist/lantern_lane',{recursive:true});
+console.log(`Built Home, About, Blog, Prayer Partners, Hetherau Crossing, 404, and ${posts.length} Markdown posts.`);

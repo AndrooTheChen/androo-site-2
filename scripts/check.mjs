@@ -15,3 +15,28 @@ const {members}=JSON.parse(fs.readFileSync('content/prayer-partners.json','utf8'
 assert.deepEqual(pairsFor(members,83)[0],['Dillon','Everett']);
 const legacy=JSON.parse(fs.readFileSync('dist/legacy-posts.json','utf8'));assert.equal(legacy['1674201600'],'/blog/performance-reviews/');
 console.log(`Verified ${html.length} HTML files, internal links, all ${postFiles.length} posts, retained legacy URLs, complete rosters, and Pacific DST boundaries.`);
+
+// The game must work under a nested route, including GitHub project Pages URLs.
+const gameDir='dist/lantern_lane';
+const gameHtml=fs.readFileSync(path.join(gameDir,'index.html'),'utf8');
+assert(gameHtml.includes('<title>Hetherau Crossing · Lantern Lane</title>'));
+for(const file of html.filter(f=>!f.startsWith(gameDir+'/'))){
+ const text=fs.readFileSync(file,'utf8');
+ assert(/<a href="\/lantern_lane\/"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/.test(text),file+': game opens in its own tab');
+}
+for(const prefix of ['/lantern_lane/','/androo-site-2/lantern_lane/']){
+ for(const [,asset] of gameHtml.matchAll(/(?:href|src)="([^"#]+)"/g)){
+  if(asset==='../'||asset.startsWith('https:'))continue;
+  const url=new URL(asset,'https://example.com'+prefix);
+  assert(url.pathname.startsWith(prefix),asset+': escaped game subdirectory');
+  assert(fs.existsSync(path.join(gameDir,url.pathname.slice(prefix.length))),asset+': missing game asset');
+ }
+}
+const manifest=JSON.parse(fs.readFileSync(path.join(gameDir,'assets/characters/manifest.json'),'utf8'));
+for(const entry of Object.values(manifest)){
+ if(!entry)continue;
+ assert(!entry.url.startsWith('/'),'Model URLs must be relative to the game.');
+ assert(fs.existsSync(path.join(gameDir,entry.url)),entry.url+': missing character model');
+}
+assert(!fs.existsSync(path.join(gameDir,'src')),'Only compiled game files are published.');
+console.log('Verified game navigation, isolated publish output, and assets under both domain and repository subpaths.');

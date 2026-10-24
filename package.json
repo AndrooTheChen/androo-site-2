@@ -1,1 +1,14 @@
-{"name":"andrew-pitstop","version":"1.0.0","private":true,"type":"module","scripts":{"build":"node scripts/build.mjs","check":"node scripts/check.mjs"},"dependencies":{"marked":"15.0.12"}}
+{
+  "name": "andrew-pitstop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs && npm --prefix lantern_lane test",
+    "game:dev": "npm --prefix lantern_lane run dev"
+  },
+  "dependencies": {
+    "marked": "15.0.12"
+  }
+}
