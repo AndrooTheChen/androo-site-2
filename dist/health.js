@@ -86,11 +86,13 @@ async function refresh() {
     const data = await response.json();
     if (current !== generation) return;
     render(data);
+    $('health-fallback').hidden = true;
     $('connection-panel').open = false;
   } catch (error) {
     if (current !== generation) return;
     const message = error.name === 'TypeError' || error.name === 'AbortError' ? 'Cannot reach your Pi. Turn on Tailscale and check the address. If your browser asks for local network access, allow it for this page. Retrying every 5 seconds.' : error.message;
     state(lastSample ? 'stale' : 'error', lastSample ? 'Stale · reconnecting' : 'Unavailable', message + (lastSample ? ' Values below are the last received sample.' : ''));
+    $('health-fallback').hidden = location.origin === endpoint;
     if (!lastSample) $('connection-panel').open = true;
   } finally {
     clearTimeout(timeout);
@@ -100,6 +102,7 @@ async function refresh() {
 function connect(url) {
   endpoint = address(url);
   $('health-endpoint').value = endpoint;
+  $('private-view').href = endpoint + '/health/';
   try { localStorage.setItem(storageKey, endpoint); } catch {}
   $('disconnect-health').hidden = false;
   state('connecting', 'Connecting', 'Opening the private connection…');
@@ -121,7 +124,7 @@ document.addEventListener('visibilitychange', () => {
 });
 let initial = '';
 try {
-  initial = new URLSearchParams(location.hash.slice(1)).get('endpoint') || localStorage.getItem(storageKey) || '';
+  initial = location.hostname.endsWith('.ts.net') ? location.origin : new URLSearchParams(location.hash.slice(1)).get('endpoint') || localStorage.getItem(storageKey) || '';
   if (location.hash.startsWith('#endpoint=')) history.replaceState(null, '', location.pathname + location.search);
   if (initial) connect(initial);
 } catch (error) { $('health-message').textContent = error.message; }

@@ -17,19 +17,19 @@ The collector needs root to read proportional process memory and Docker metadata
 
 ## Installation on the existing Pi
 
-Requires Python 3.11+, systemd, cgroup v2, Docker and an already configured Tailscale account/HTTPS. No Python packages are needed. Copy this directory to the Pi, review the fixed service/container names and disk mount in `install.sh`, then run:
+Requires Python 3.11+, systemd, cgroup v2, Docker and an already configured Tailscale account/HTTPS. No Python packages are needed. Build the site (`npm run build`) and copy this directory plus `dist/` to the Pi. Review the fixed service/container names and disk mount in `install.sh`, then run:
 
 ```sh
-sudo bash install.sh
+sudo bash install.sh ../dist
 ```
 
-The installer creates `/etc/pi-health/config.json` and `/etc/pi-health/api.env` only if absent. It derives the initial allowed user from the Pi's Tailscale owner. Review that allowlist if the Pi is tagged or owned by a different account. The origin allowlist includes only `https://androochen.com` and `https://www.androochen.com`. These configuration files stay on the Pi, outside the public repository. Missing/empty identity configuration prevents API startup.
+The installer creates `/etc/pi-health/config.json` and `/etc/pi-health/api.env` only if absent. It derives the initial allowed user from the Pi's Tailscale owner. Review that allowlist if the Pi is tagged or owned by a different account. The origin allowlist includes `https://androochen.com`, `https://www.androochen.com`, and this Pi’s private HTTPS origin. These configuration files stay on the Pi, outside the public repository. Missing/empty identity configuration prevents API startup.
 
 The new private Serve route uses HTTPS port 9443 → loopback port 9101, preserving existing routes on 443 and 8443. Never use `tailscale funnel`, router port forwarding, or a public reverse proxy for it. Installation restarts only the two new monitoring services, not Docker, Nextcloud, Afterglow, Tailscale or the Pi.
 
 On `/health/`, enter the private address shown by `tailscale serve status`, including `:9443`. It is remembered in this browser's local storage; no credential is stored. Alternatively, open `/health/#endpoint=` followed by the URL-encoded private address. The fragment is not sent to the website server and is removed from the address bar after use. Do not commit your endpoint or connection link to the public repo.
 
-Tailscale must be connected on the viewing device. Some browsers require local network permission for a public page to reach a private server; grant it only to your own site. The page explains connection failures and retries. A visitor outside the tailnet cannot reach the API; another Tailscale identity is denied even if it can reach the device. Tagged clients without a user identity are denied. Permission rules in the tailnet still apply.
+Tailscale must be connected on the viewing device. Some browsers require local network permission for a public page to reach a private server; grant it only to your own site. The page explains connection failures and retries. If the browser blocks public-to-private fetches, **Open private view** opens the same dashboard directly on the Pi, where its API is on the same origin. The private view and its fixed asset paths require the same approved Tailscale identity. Public navigation links return to androochen.com. A visitor outside the tailnet cannot reach the API; another Tailscale identity is denied even if it can reach the device. Tagged clients without a user identity are denied. Permission rules in the tailnet still apply.
 
 ## Interpreting the measurements
 
@@ -52,7 +52,7 @@ journalctl -u pi-health-collector -u pi-health-api --since '10 minutes ago'
 tailscale serve status
 ```
 
-The API accepts only `GET /v1/metrics` with `X-Pi-Health: 1` and a user identity inserted by Tailscale Serve. Browser requests must originate from the explicit allowlist. Responses use `Cache-Control: no-store`. Anonymous, unauthorized-user and disallowed-origin requests return 403; missing/stale snapshots return 503. Unsupported paths/methods do not run commands. Unit tests cover these boundaries and CPU/memory accounting.
+The metrics API accepts only `GET /v1/metrics` with `X-Pi-Health: 1` and a user identity inserted by Tailscale Serve. Browser requests must originate from the explicit allowlist. Responses use `Cache-Control: no-store`. Anonymous, unauthorized-user and disallowed-origin requests return 403; missing/stale snapshots return 503. Unsupported paths/methods do not run commands. Unit tests cover these boundaries and CPU/memory accounting.
 
 To update code, copy the monitoring files and rerun the installer; existing configuration is preserved. To disable monitoring without affecting application services:
 

@@ -124,6 +124,17 @@ class Security(unittest.TestCase):
         headers.pop('X-Pi-Health')
         self.assertEqual(self.request(headers=headers)[0], 400)
 
+    def test_private_view_is_identity_protected_and_fixed_path(self):
+        (Path(self.temp.name) / 'index.html').write_text('<h1>Private dashboard</h1>')
+        with patch.object(api, 'WEB', Path(self.temp.name)):
+            self.assertEqual(self.request(path='/health/')[0], 403)
+            status, headers, body = self.request(path='/health/', headers=self.auth())
+            self.assertEqual(status, 200)
+            self.assertIn('text/html', headers['Content-Type'])
+            self.assertIn("frame-ancestors 'none'", headers['Content-Security-Policy'])
+            self.assertIn(b'Private dashboard', body)
+            self.assertEqual(self.request(path='/../api.env', headers=self.auth())[0], 404)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -7,6 +7,13 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
 
 SNAPSHOT = Path('/run/pi-health/snapshot.json')
+WEB = Path('/opt/pi-health/web')
+STATIC = {'/': ('index.html', 'text/html; charset=utf-8'),
+          '/health/': ('index.html', 'text/html; charset=utf-8'),
+          '/health.js': ('health.js', 'text/javascript; charset=utf-8'),
+          '/health.css': ('health.css', 'text/css; charset=utf-8'),
+          '/styles.css': ('styles.css', 'text/css; charset=utf-8'),
+          '/favicon.svg': ('favicon.svg', 'image/svg+xml')}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -20,13 +27,16 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_):
         pass
 
-    def reply(self, status, payload=None):
-        body = json.dumps(payload, separators=(',', ':')).encode() if payload is not None else b''
+    def reply(self, status, payload=None, content_type='application/json'):
+        body = payload if isinstance(payload, bytes) else json.dumps(payload, separators=(',', ':')).encode() if payload is not None else b''
         self.send_response(status)
-        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Type', content_type)
         self.send_header('Content-Length', str(len(body)))
         self.send_header('Cache-Control', 'no-store')
         self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('Referrer-Policy', 'no-referrer')
+        if content_type.startswith('text/html'):
+            self.send_header('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'")
         self.send_header('Vary', 'Origin')
         origin = self.headers.get('Origin')
         if origin in self.server.allowed_origins:
@@ -48,7 +58,7 @@ class Handler(BaseHTTPRequestHandler):
         if origin is not None and origin not in self.server.allowed_origins:
             self.reply(403, {'error': 'Origin is not authorized.'})
             return False
-        if self.path != '/v1/metrics':
+        if self.path != '/v1/metrics' and self.path not in STATIC:
             self.reply(404, {'error': 'Not found.'})
             return False
         return True
@@ -57,13 +67,20 @@ class Handler(BaseHTTPRequestHandler):
         if not self.authorized():
             return
         requested = {s.strip().lower() for s in self.headers.get('Access-Control-Request-Headers', '').split(',') if s.strip()}
-        if self.headers.get('Access-Control-Request-Method') != 'GET' or requested - {'x-pi-health'}:
+        if self.path != '/v1/metrics' or self.headers.get('Access-Control-Request-Method') != 'GET' or requested - {'x-pi-health'}:
             self.reply(403, {'error': 'Request is not allowed.'})
             return
         self.reply(204)
 
     def do_GET(self):
         if not self.authorized():
+            return
+        if self.path in STATIC:
+            filename, content_type = STATIC[self.path]
+            try:
+                self.reply(200, (WEB / filename).read_bytes(), content_type)
+            except OSError:
+                self.reply(503, {'error': 'Private view is not installed.'})
             return
         if self.headers.get('X-Pi-Health') != '1':
             self.reply(400, {'error': 'Missing dashboard request header.'})
