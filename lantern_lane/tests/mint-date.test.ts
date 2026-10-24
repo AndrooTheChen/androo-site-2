@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialState,clone,validateSave,completeDelivery,beginMintDate,shareMintDateDrink,completeMintDate,inviteMintHome,beginMintSnuggle,sendMintHome,atMintDateStop,mintDateStop} from '../src/state.ts';
-import {MINT_DATE_STOPS,MINT_HOME_SPOT} from '../src/content.ts';
+import {initialState,clone,validateSave,completeDelivery,beginMintDate,orderCafeDrink,travelTo,shareMintDateDrink,completeMintDate,inviteMintHome,beginMintSnuggle,sendMintHome,atMintDateStop,mintDateStop} from '../src/state.ts';
+import {CAFE,MINT_DATE_STOPS,MINT_HOME_SPOT} from '../src/content.ts';
 
 const reload=(s:unknown)=>validateSave(JSON.parse(JSON.stringify(s)));
 function delivered(){const s=initialState();s.quests.delivery='active';completeDelivery(s);return s;}
@@ -19,8 +19,9 @@ test('date requires both people at each stop, saves the drink, and awards its ke
     assert.equal(shareMintDateDrink(s,drink,MINT_DATE_STOPS.cafe),false); // player elsewhere
     s.player={...MINT_DATE_STOPS.cafe};assert.equal(shareMintDateDrink(s,drink,{x:12,z:8}),false); // Mint still walking
     s.scene='home';assert.equal(atMintDateStop(s,MINT_DATE_STOPS.cafe),false);s.scene='town';
-    assert.equal(shareMintDateDrink(s,drink,MINT_DATE_STOPS.cafe),true);s=reload(s);assert.equal(s.mintDateDrink,drink);assert.deepEqual(mintDateStop(s),MINT_DATE_STOPS.canal);
-    assert.equal(completeMintDate(s),false);s.player={...MINT_DATE_STOPS.canal};
+    assert.equal(shareMintDateDrink(s,drink,MINT_DATE_STOPS.cafe),false); // outdoors no longer completes the café stop
+    travelTo(s,'cafe');s.player={...CAFE.counter};assert.equal(orderCafeDrink(s,drink,true),true);s.player={...CAFE.table};assert.equal(shareMintDateDrink(s,drink,CAFE.mint),true);s=reload(s);assert.equal(s.mintDateDrink,drink);assert.deepEqual(mintDateStop(s),MINT_DATE_STOPS.canal);
+    assert.equal(completeMintDate(s),false);travelTo(s,'town');s.player={...MINT_DATE_STOPS.canal};
     assert.equal(inviteMintHome(s,MINT_DATE_STOPS.canal),true);s=reload(s);
     assert.equal(beginMintSnuggle(s),false);assert.equal(completeMintDate(s),false);
     s.scene='home';s.mintAtHome=true;s.player={x:0,z:2.8};assert.equal(beginMintSnuggle(s),false);

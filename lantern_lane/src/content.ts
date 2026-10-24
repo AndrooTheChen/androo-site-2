@@ -1,10 +1,22 @@
-export const CONTENT_VERSION = '0.3.0';
+export const CONTENT_VERSION = '0.4.0';
 export const MISSION_IDS = ['delivery','anomaly','stickers','home','mintDate'] as const;
 export type MissionId = typeof MISSION_IDS[number];
 export const MINT_HOME_SPOT = {x:-1.05,z:-1.6};
 export const MINT_COURTYARD = {x:-2,z:4};
+export const CAFE = {
+  door:{x:-2.5,z:-3.65}, outside:{x:-2.5,z:-2.1}, entry:{x:4.8,z:3.2},
+  exit:{x:4.8,z:4.1}, counter:{x:1.8,z:-1.35}, table:{x:-2.6,z:-.4},
+  mint:{x:-2.75,z:-1.8},
+} as const;
+export const CAFE_DRINKS = {
+  tea:{name:'Jasmine tea',price:18,color:'#d5bc76',note:'Floral, warm, and a little like a garden after rain.',sip:'The jasmine smells like a little garden. You let the warmth linger.'},
+  soda:{name:'Strawberry soda',price:24,color:'#db8f98',note:'Pink fizz, a berry garnish, and a very unhurried afternoon.',sip:'Tiny strawberry bubbles dance on your tongue. The afternoon feels brighter.'},
+  latte:{name:'Honey cloud latte',price:28,color:'#c99d70',note:'Mellow coffee under a soft cap of honey milk foam.',sip:'A little honey, a little coffee. You take a breath and watch the world slow down.'},
+  matcha:{name:'Vanilla matcha',price:30,color:'#94ad79',note:'Soft green tea with milk and a whisper of vanilla.',sip:'Earthy matcha and sweet vanilla. For a moment, there is nowhere else to be.'},
+} as const;
+export type CafeDrinkId = keyof typeof CAFE_DRINKS;
 export const MINT_DATE_STOPS = {
-  cafe: { x: -2.5, z: 1, name: 'Morrow Café', hint: 'Meet Mint in front of Morrow Café and choose a drink together.' },
+  cafe: { x: -2.5, z: 1, name: 'Morrow Café', hint: 'Enter Morrow Café, order at the counter, and share a drink with Mint by the window.' },
   apartment: { x:-11, z:-2.4, name:'Lane House', hint:'Bring Mint to your apartment, then talk to her by the bed.' },
   canal: { x: 12, z: 8.5, name: 'Canal walk', hint: 'Meet Mint at the canal overlook for a quiet moment together.' },
 } as const;

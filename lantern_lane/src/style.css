@@ -38,3 +38,22 @@
 .mission-layout,.mission-detail,.mission-list,.mission-list button{min-width:0}
 .mission-list button{overflow-wrap:anywhere}
 @media(max-width:600px){.mission-layout{grid-template-columns:minmax(0,1fr)}.mission-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Morrow's paper menu: large touch targets and quiet, illustrated cups. */
+.modal.cafe-menu{max-width:min(760px,calc(100vw - 36px));background:#f5eddb;padding:34px 38px 26px;border:1px solid #d5c5a4}
+.cafe-menu-header{text-align:center;padding:4px 0 20px;border-bottom:1px solid #d6c8ad}
+.cafe-menu-header h2{font-family:Georgia,serif;font-size:46px;font-weight:400;letter-spacing:-2px;color:#496452;margin:9px 0 10px}
+.cafe-menu-header p{font-size:13px;line-height:1.7;margin:0;color:#7c7967}
+.cafe-open{display:block;margin-top:16px;font-size:9px;letter-spacing:2px;color:#8a9a7a}
+.cafe-order-note{margin:20px 0;color:#5c735e;background:#e6e7d5;padding:13px 16px;border-radius:8px;font-size:12px;line-height:1.6}
+.cafe-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cafe-drink{background:#faf5e9;border:1px solid #e2d6bd;border-radius:12px;padding:18px;display:flex;flex-direction:column}
+.cafe-cup{height:72px;text-align:center;margin-bottom:8px}.cafe-cup svg{height:72px;width:96px}
+.cafe-drink h3{font-family:Georgia,serif;font-size:19px;font-weight:400;color:#586b54;margin:5px 0 7px}
+.cafe-drink p{font-size:11px;line-height:1.6;margin:0 0 16px;flex:1;color:#85806d}
+.cafe-drink .buy{width:100%;font-size:11px;gap:8px;padding-top:12px;min-height:44px}
+.cafe-menu-footer{font-size:10px!important;color:#8b8675!important;margin:18px 0 0!important;text-align:center}
+.cafe-held{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;margin:16px 0;background:#eee1c6;border-radius:9px}
+.cafe-held small{display:block;letter-spacing:1.5px;font-size:8px;margin-bottom:5px;color:#8b785d}.cafe-held strong{font-size:13px;color:#655b44}.cafe-held button{font-size:11px;min-height:42px;white-space:nowrap}
+@media(max-width:600px){.modal.cafe-menu{padding:26px 19px 22px}.cafe-menu-header h2{font-size:37px}.cafe-menu-grid{gap:10px}.cafe-drink{padding:12px}.cafe-drink h3{font-size:16px}.cafe-drink .buy{flex-wrap:wrap;justify-content:flex-start;font-size:10px}.cafe-cup,.cafe-cup svg{height:60px}.cafe-order-note{padding:12px;font-size:11px}}
+@media(max-width:360px){.cafe-menu-grid{grid-template-columns:1fr}}

@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { CATALOG, CHARACTERS, COLLECTIBLES, MINT_HOME_SPOT, MINT_COURTYARD, type ItemId, type CharacterId } from './content';
-import { dimensions, mintDateStop, type GameState, type Placement, type MintDateStage } from './state';
+import { CAFE, CATALOG, CHARACTERS, COLLECTIBLES, MINT_HOME_SPOT, MINT_COURTYARD, type ItemId, type CharacterId } from './content';
+import { dimensions, mintDateStop, type GameState, type Placement, type MintDateStage, type SceneId } from './state';
 import { faceToward } from './camera';
+import {buildCafe,CAFE_OBSTACLES,tintCafeDrinks} from './cafe';
 
 const mats=new Map<string,THREE.MeshStandardMaterial>();
 function mat(color:string,roughness=.85){if(!mats.has(color))mats.set(color,new THREE.MeshStandardMaterial({color,roughness}));return mats.get(color)!;}
@@ -105,19 +106,19 @@ export function furnitureModel(item:ItemId):THREE.Group{
 }
 type Obstacle={x:number;z:number;w:number;d:number};
 export class World{
-  scene=new THREE.Scene();town=new THREE.Group();home=new THREE.Group();actors=new Map<CharacterId,Actor>();player:Actor;
+  scene=new THREE.Scene();town=new THREE.Group();home=new THREE.Group();cafe=new THREE.Group();cafeDrinks=new THREE.Group();cafeHost!:Actor;private cafeDrinkColor:string|null=null;actors=new Map<CharacterId,Actor>();player:Actor;
   furniture=new THREE.Group();pickups=new Map<string,THREE.Group>();ghost:THREE.Group|null=null;
   sunlight=new THREE.DirectionalLight('#fff3d2',2.5);ambient=new THREE.HemisphereLight('#fff1d6','#91a398',2.3);
   water!:THREE.Mesh;marker=new THREE.Mesh(new THREE.RingGeometry(.32,.43,32),new THREE.MeshBasicMaterial({color:'#fff5d7',side:THREE.DoubleSide,transparent:true,opacity:.9}));
-  obstacles:Obstacle[]=[];sceneId:'town'|'home'='town';rain!:THREE.Points;sky=new THREE.Color('#b9d4cb');
+  obstacles:Obstacle[]=[];sceneId:SceneId='town';rain!:THREE.Points;sky=new THREE.Color('#b9d4cb');
   dateMarker=new THREE.Mesh(new THREE.RingGeometry(.7,.77,40),new THREE.MeshBasicMaterial({color:'#58ac9b',side:THREE.DoubleSide,transparent:true,opacity:.85}));
   private mintDateStage:MintDateStage|'unset'='unset';
   private mintRoute:THREE.Vector3[]=[];
-  constructor(s:GameState){this.scene.background=this.sky;this.scene.fog=new THREE.Fog('#b9d4cb',65,115);this.scene.add(this.town,this.home,this.ambient,this.sunlight);this.sunlight.position.set(-12,28,18);this.sunlight.castShadow=true;this.sunlight.shadow.mapSize.set(2048,2048);Object.assign(this.sunlight.shadow.camera,{left:-26,right:26,top:26,bottom:-26,near:1,far:90});this.sunlight.shadow.bias=-.0005;this.sunlight.shadow.normalBias=.035;
-    this.buildTown();this.buildHome();this.player=makeActor(s.color,'#574f40');this.scene.add(this.player.root);
+  constructor(s:GameState){this.scene.background=this.sky;this.scene.fog=new THREE.Fog('#b9d4cb',65,115);this.scene.add(this.town,this.home,this.cafe,this.ambient,this.sunlight);this.sunlight.position.set(-12,28,18);this.sunlight.castShadow=true;this.sunlight.shadow.mapSize.set(2048,2048);Object.assign(this.sunlight.shadow.camera,{left:-26,right:26,top:26,bottom:-26,near:1,far:90});this.sunlight.shadow.bias=-.0005;this.sunlight.shadow.normalBias=.035;
+    this.buildTown();this.buildHome();const cafe=buildCafe();this.cafe.add(cafe.root);this.cafeDrinks=cafe.drinks;this.cafeHost=makeActor('#90a28d','#69564b');this.cafeHost.root.position.set(1.5,0,-4);this.cafe.add(this.cafeHost.root);this.player=makeActor(s.color,'#574f40');this.scene.add(this.player.root);
     for(const [id,pos]of Object.entries({mint:[-2,4],nanally:[8,6],hotori:[7,-3]}) as [CharacterId,number[]][]){const def=CHARACTERS[id];const a=makeActor(def.color,def.hair,id);a.root.position.set(pos[0],0,pos[1]);this.actors.set(id,a);this.town.add(a.root);}
     const stop=mintDateStop(s);if(stop)this.actors.get('mint')!.root.position.set(stop.x,0,stop.z);
-    this.dateMarker.rotation.x=-Math.PI/2;this.dateMarker.visible=false;this.town.add(this.dateMarker);
+    this.dateMarker.rotation.x=-Math.PI/2;this.dateMarker.visible=false;this.scene.add(this.dateMarker);
     this.marker.rotation.x=-Math.PI/2;this.marker.visible=false;this.scene.add(this.marker);
     const rainPos=new Float32Array(400*3);for(let i=0;i<400;i++){rainPos[i*3]=Math.random()*40-20;rainPos[i*3+1]=Math.random()*18;rainPos[i*3+2]=Math.random()*35-17;}const rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.BufferAttribute(rainPos,3));this.rain=new THREE.Points(rg,new THREE.PointsMaterial({color:'#e6f2e5',size:.055,transparent:true,opacity:.6}));this.scene.add(this.rain);
     this.setScene(s.scene,s);this.loadCharacters();
@@ -168,7 +169,7 @@ export class World{
     textSign(root,'a little place to belong',2.4,2.2,-3.96,1.6,.7,'#d8b389','#fff2d7');box(root,0,.075,3.4,1.4,.03,.7,'#879d86');optimize(root);this.home.add(this.furniture);
   }
   rebuildFurniture(s:GameState){this.furniture.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});this.furniture.clear();for(const f of s.furniture){if(!f.placement)continue;const g=furnitureModel(f.item);g.name=f.id;g.position.set(f.placement.x,.07,f.placement.z);g.rotation.y=f.placement.rotation*Math.PI/180;this.furniture.add(g);}}
-  setScene(id:'town'|'home',s:GameState){this.sceneId=id;this.town.visible=id==='town';this.home.visible=id==='home';for(const a of this.actors.values())a.root.visible=id==='town';standActor(this.player,s.player);this.rebuildFurniture(s);this.marker.visible=false;this.syncMint(s);}
+  setScene(id:SceneId,s:GameState){this.sceneId=id;this.town.visible=id==='town';this.home.visible=id==='home';this.cafe.visible=id==='cafe';for(const a of this.actors.values())a.root.visible=id==='town';standActor(this.player,s.player);this.rebuildFurniture(s);this.marker.visible=false;this.syncMint(s);}
   syncMint(s:GameState,reset=false){
     const mint=this.actors.get('mint')!;
     if(s.mintAtHome){
@@ -177,20 +178,28 @@ export class World{
         if(!mint.bedPose)layActorOnBed(mint,-3.15);
       }else if(mint.bedPose)standActor(mint,MINT_HOME_SPOT);
       mint.root.visible=s.scene==='home';this.mintRoute=[];this.mintDateStage=s.quests.mintDate;
+    }else if(s.scene==='cafe'&&(s.quests.mintDate==='cafe'||s.quests.mintDate==='canal')){
+      if(mint.root.parent!==this.cafe||reset){this.cafe.add(mint.root);standActor(mint,CAFE.mint);mint.root.rotation.y=.3;}
+      mint.root.visible=true;mint.moving=false;this.mintRoute=[];this.mintDateStage='unset';
     }else{
       if(mint.root.parent!==this.town||reset){
-        this.town.add(mint.root);standActor(mint,reset?(mintDateStop(s)??MINT_COURTYARD):MINT_COURTYARD);
+        const fromCafe=mint.root.parent===this.cafe;
+        this.town.add(mint.root);standActor(mint,reset?(s.scene==='town'?mintDateStop(s):null)??MINT_COURTYARD:fromCafe?CAFE.outside:MINT_COURTYARD);
         this.mintRoute=[];this.mintDateStage='unset';
       }
       mint.root.visible=s.scene==='town';
     }
+    const drink=s.mintDateOrder??(s.quests.mintDate==='canal'?s.mintDateDrink:null);
+    this.cafeDrinks.visible=s.scene==='cafe'&&!!drink;
+    if(drink&&drink!==this.cafeDrinkColor){tintCafeDrinks(this.cafeDrinks,drink);this.cafeDrinkColor=drink;}
   }
   setSnuggleView(s:GameState,active:boolean){
     if(active&&!this.player.bedPose)layActorOnBed(this.player,-2.15,.82);
     else if(!active&&this.player.bedPose)standActor(this.player,s.player);
   }
   updatePickups(s:GameState){for(const [id,g]of this.pickups)g.visible=!s.collected.includes(id)&&(id!=='odd-clock'||s.quests.anomaly==='active');}
-  blocked(x:number,z:number,s:GameState,r=.3):boolean {if(this.sceneId==='home'){if(Math.abs(x)>3.65-r||Math.abs(z)>3.7-r)return true;if(x< -1.5+r&&z< -.5+r)return true;return s.furniture.some(f=>{if(!f.placement||f.item==='rug')return false;const [w,d]=dimensions(f.item,f.placement.rotation);return Math.abs(f.placement.x-x)<w/2+r&&Math.abs(f.placement.z-z)<d/2+r;});}
+  blocked(x:number,z:number,s:GameState,r=.3):boolean {if(this.sceneId==='cafe'){if(Math.abs(x)>6.6-r||Math.abs(z)>4.65-r)return true;return CAFE_OBSTACLES.some(o=>Math.abs(x-o.x)<o.w/2+r&&Math.abs(z-o.z)<o.d/2+r);}
+    if(this.sceneId==='home'){if(Math.abs(x)>3.65-r||Math.abs(z)>3.7-r)return true;if(x< -1.5+r&&z< -.5+r)return true;return s.furniture.some(f=>{if(!f.placement||f.item==='rug')return false;const [w,d]=dimensions(f.item,f.placement.rotation);return Math.abs(f.placement.x-x)<w/2+r&&Math.abs(f.placement.z-z)<d/2+r;});}
     if(x< -17.3+r||x>14.8-r||z< -4.7+r||z>13.7-r)return true;return this.obstacles.some(o=>Math.abs(x-o.x)<o.w/2+r&&Math.abs(z-o.z)<o.d/2+r);
   }
   pathTo(x:number,z:number,s:GameState,start=this.player.root.position):THREE.Vector3[]{const step=.5;const sx=Math.round(start.x/step),sz=Math.round(start.z/step);let tx=Math.round(x/step),tz=Math.round(z/step);if(this.blocked(tx*step,tz*step,s)){let best=Infinity;for(let a=-5;a<=5;a++)for(let b=-5;b<=5;b++){const d=a*a+b*b;if(d<best&&!this.blocked((tx+a)*step,(tz+b)*step,s)){best=d;x=(tx+a)*step;z=(tz+b)*step;}}if(best===Infinity)return [];tx=Math.round(x/step);tz=Math.round(z/step);}
@@ -241,9 +250,10 @@ export class World{
     } catch(e) { console.warn('Character manifest unavailable; using stand-ins.',e); }
   }
   tick(dt:number,time:number,s:GameState,paused:boolean){const evening=Math.max(0,Math.min(1,(s.minutes-17*60)/150));const night=s.minutes<6*60?1:evening;this.sunlight.intensity=2.4-night*1.9;this.ambient.intensity=2.2-night*.85;this.sky.set('#bad3ca').lerp(new THREE.Color('#687e8c'),night);this.scene.background=this.sky;(this.scene.fog as THREE.Fog).color.copy(this.sky);this.sunlight.color.set('#fff2d4').lerp(new THREE.Color('#f2ba9a'),evening);this.rain.visible=s.day%3===0&&s.scene==='town';if(this.rain.visible&&!paused){const a=this.rain.geometry.attributes.position;for(let i=0;i<a.count;i++){a.setY(i,a.getY(i)-dt*10);if(a.getY(i)<0)a.setY(i,18);}a.needsUpdate=true;}
-    const dateStop=mintDateStop(s);this.dateMarker.visible=!!dateStop;
+    if(s.scene==='cafe'){this.sunlight.intensity=1.6;this.ambient.intensity=2.1;this.sunlight.color.set('#ffe1b3');this.sky.set('#c5b69c');}
+    const dateStop=mintDateStop(s);this.dateMarker.visible=!!dateStop&&(s.scene==='town'||s.scene==='cafe'&&s.quests.mintDate==='cafe');
     if(dateStop)this.dateMarker.position.set(dateStop.x,.13,dateStop.z);
     for(const [id,g]of this.pickups)if(!paused&&!s.settings.reducedMotion){g.position.y=.8+Math.sin(time*2+id.length)*.12;g.rotation.y+=dt*.7;}
-    for(const a of [this.player,...this.actors.values()]){if(a.bedPose)continue;if(a.mixer){a.mixer.update(paused?0:dt);if(a.actions?.walk){const walking=a.moving&&!paused;a.actions.walk.enabled=walking;if(walking&&!a.actions.walk.isRunning())a.actions.walk.play();if(a.actions.idle)a.actions.idle.enabled=!walking;}}else{a.visual.position.y=paused||s.settings.reducedMotion?0:(a.moving?Math.sin(time*14)*.045:Math.sin(time*2+a.phase)*.025);a.limbs.forEach((l,i)=>l.rotation.x=a.moving&&!paused?Math.sin(time*12+i%2*Math.PI)*.45:0);}}
+    for(const a of [this.player,this.cafeHost,...this.actors.values()]){if(a.bedPose)continue;if(a.mixer){a.mixer.update(paused?0:dt);if(a.actions?.walk){const walking=a.moving&&!paused;a.actions.walk.enabled=walking;if(walking&&!a.actions.walk.isRunning())a.actions.walk.play();if(a.actions.idle)a.actions.idle.enabled=!walking;}}else{a.visual.position.y=paused||s.settings.reducedMotion?0:(a.moving?Math.sin(time*14)*.045:Math.sin(time*2+a.phase)*.025);a.limbs.forEach((l,i)=>l.rotation.x=a.moving&&!paused?Math.sin(time*12+i%2*Math.PI)*.45:0);}}
   }
 }

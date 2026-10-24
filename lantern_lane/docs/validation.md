@@ -146,3 +146,25 @@ in isolated desktop and phone layout fixtures. A phone horizontal-overflow issue
 was corrected with shrinkable grid tracks; the final phone modal measured 317px
 client width and 317px scroll width. Its longer content remains vertically
 scrollable. This validates menu layout only, not in-game controls or WebGL.
+
+
+## Morrow Café (0.4)
+
+- Production TypeScript/Vite build, site route/asset checks, and all 37 tests pass.
+- Added coverage for unrestricted café entry and correct return doorway; all four
+  drink prices, insufficient funds, duplicate ordering, consumption, and reloads;
+  Mint's indoor order / window conversation / canal progression; pending orders
+  across leaving/reloading; legacy migration and mission skip/replay/jump cleanup.
+- Navigation checks sample each route segment through the actual collision map,
+  from entrance to counter, Mint, quiet corner, and exit. Mint's return route to
+  the canal and parent/visibility across room changes are checked.
+- Room geometry stays within the existing combined scene budget: 287 meshes and
+  52,460 triangles before imported character replacement. The original and
+  optimized Mint GLBs remain byte-for-byte unchanged.
+- Café camera framing checks fit the full room at desktop and phone aspect ratios; close zoom follows the player.
+- Menu inspected in the cloud browser at desktop width and inside a 390px frame;
+  corrected a mobile max-width overflow. Buying a latte charged 28 coins, blocked
+  another order while carrying it, and consuming it re-enabled ordering.
+- Room arrangement inspected with a software projection of the actual geometry.
+  Full WebGL gameplay is still unverified: this managed browser has disabled GPU
+  rendering. The projection is a layout check, not a screenshot of live gameplay.

@@ -1,13 +1,14 @@
-import { CATALOG, CONTENT_VERSION, MINT_DATE_STOPS, MINT_HOME_SPOT, MISSION_IDS, type MissionId, type ItemId, type CharacterId } from './content';
+import { CATALOG, CAFE, CAFE_DRINKS, type CafeDrinkId, CONTENT_VERSION, MINT_DATE_STOPS, MINT_HOME_SPOT, MISSION_IDS, type MissionId, type ItemId, type CharacterId } from './content';
 export type MintDateStage = 'new'|'cafe'|'canal'|'apartment'|'snuggle'|'done';
-export type DateDrink = 'soda'|'tea';
+export type DateDrink = CafeDrinkId;
+export type SceneId = 'town'|'home'|'cafe';
 export type Placement = {x:number; z:number; rotation:number};
 export type Furniture = {id:string; item:ItemId; placement:Placement|null};
 export type GameState = {
   schemaVersion:1; contentVersion:string; revision:number; name:string; color:string;
-  day:number; minutes:number; coins:number; scene:'town'|'home'; player:{x:number;z:number};
+  day:number; minutes:number; coins:number; scene:SceneId; player:{x:number;z:number};
   quests:{delivery:'new'|'active'|'done'; anomaly:'new'|'active'|'found'|'done'; stickers:'new'|'active'|'done'; mintDate:MintDateStage; home:'new'|'bought'|'done'};
-  mintDateDrink:DateDrink|null; mintAtHome:boolean; selectedMission:MissionId|null; skippedMissions:MissionId[];
+  mintDateDrink:DateDrink|null; mintDateOrder:DateDrink|null; cafeDrink:CafeDrinkId|null; mintAtHome:boolean; selectedMission:MissionId|null; skippedMissions:MissionId[];
   collected:string[]; rewards:string[]; furniture:Furniture[]; nextId:number;
   friendship:Record<CharacterId,number>; greeted:Record<string,number>;
   settings:{sound:boolean; reducedMotion:boolean}; started:boolean;
@@ -15,7 +16,7 @@ export type GameState = {
 export function initialState():GameState {return {
   schemaVersion:1,contentVersion:CONTENT_VERSION,revision:0,name:'Neighbor',color:'#e7aa74',
   day:1,minutes:16*60+20,coins:500,scene:'town',player:{x:-3,z:8},
-  quests:{delivery:'new',anomaly:'new',stickers:'new',mintDate:'new',home:'new'},mintDateDrink:null,mintAtHome:false,selectedMission:null,skippedMissions:[],collected:[],rewards:[],
+  quests:{delivery:'new',anomaly:'new',stickers:'new',mintDate:'new',home:'new'},mintDateDrink:null,mintDateOrder:null,cafeDrink:null,mintAtHome:false,selectedMission:null,skippedMissions:[],collected:[],rewards:[],
   furniture:[{id:'f-1',item:'rug',placement:{x:0,z:0,rotation:0}}],nextId:2,
   friendship:{mint:0,nanally:0,hotori:0},greeted:{},settings:{sound:false,reducedMotion:false},started:false,
 };}
@@ -29,18 +30,39 @@ export function completeDelivery(s:GameState):boolean {
   if(s.quests.delivery!=='active')return false;
   s.quests.delivery='done';reward(s,'delivery-intro',120,['mint','nanally']);return true;
 }
-export function mintDateStop(s:GameState){const stage=s.quests.mintDate;return stage==='cafe'||stage==='canal'||(stage==='apartment'&&!s.mintAtHome)?MINT_DATE_STOPS[stage]:null;}
+export function mintDateStop(s:GameState){const stage=s.quests.mintDate;if(stage==='cafe'&&s.scene==='cafe')return {...CAFE.mint,name:'Window corner',hint:s.mintDateOrder?'Your drinks are ready. Talk to Mint by the window.':'Order your drinks at the café counter.'};return stage==='cafe'||stage==='canal'||(stage==='apartment'&&!s.mintAtHome)?MINT_DATE_STOPS[stage]:null;}
 export function beginMintDate(s:GameState):boolean {
   if(s.quests.delivery!=='done'||s.quests.mintDate!=='new'||s.scene!=='town')return false;
   s.quests.mintDate='cafe';return true;
 }
 export function atMintDateStop(s:GameState,mint:{x:number;z:number}):boolean {
   const stop=mintDateStop(s);
-  return !!stop&&s.scene==='town'&&Math.hypot(s.player.x-stop.x,s.player.z-stop.z)<=2.6&&Math.hypot(mint.x-stop.x,mint.z-stop.z)<=.65;
+  return !!stop&&s.scene===(s.quests.mintDate==='cafe'?'cafe':'town')&&Math.hypot(s.player.x-stop.x,s.player.z-stop.z)<=2.6&&Math.hypot(mint.x-stop.x,mint.z-stop.z)<=.65;
 }
 export function shareMintDateDrink(s:GameState,drink:DateDrink,mint:{x:number;z:number}):boolean {
-  if(s.quests.mintDate!=='cafe'||!atMintDateStop(s,mint)||!['soda','tea'].includes(drink))return false;
-  s.mintDateDrink=drink;s.quests.mintDate='canal';return true;
+  if(s.quests.mintDate!=='cafe'||!atMintDateStop(s,mint)||!Object.hasOwn(CAFE_DRINKS,drink)||s.mintDateOrder!==drink)return false;
+  s.mintDateDrink=drink;s.mintDateOrder=null;s.quests.mintDate='canal';return true;
+}
+export function orderCafeDrink(s:GameState,drink:CafeDrinkId,forDate=false):boolean {
+  if(s.scene!=='cafe'||Math.hypot(s.player.x-CAFE.counter.x,s.player.z-CAFE.counter.z)>2.2||!Object.hasOwn(CAFE_DRINKS,drink))return false;
+  if(forDate){
+    if(s.quests.mintDate!=='cafe'||s.mintDateOrder!==null)return false;
+    // Mint's invitation promised her treat; this pair cannot be taken or sold as inventory.
+    s.mintDateOrder=drink;return true;
+  }
+  const price=CAFE_DRINKS[drink].price;
+  if(s.cafeDrink!==null||s.coins<price)return false;
+  s.coins-=price;s.cafeDrink=drink;return true;
+}
+export function enjoyCafeDrink(s:GameState):CafeDrinkId|null {
+  const drink=s.cafeDrink;s.cafeDrink=null;return drink;
+}
+export function travelTo(s:GameState,to:SceneId):boolean {
+  const from=s.scene;if(from===to||(from!=='town'&&to!=='town'))return false;
+  s.scene=to;
+  if(to==='home'&&s.quests.mintDate==='apartment')s.mintAtHome=true;
+  s.player=to==='cafe'?{...CAFE.entry}:to==='home'?{x:0,z:2.8}:from==='cafe'?{...CAFE.outside}:{x:-11,z:-2.4};
+  return true;
 }
 export function inviteMintHome(s:GameState,mint:{x:number;z:number}):boolean {
   if(s.quests.mintDate!=='canal'||!atMintDateStop(s,mint))return false;
@@ -94,12 +116,16 @@ export function validateSave(value:unknown):GameState {
   const s=clone(value) as GameState;
   if(s.schemaVersion!==1)throw Error('This save version is not supported. Your current progress is unchanged.');
   const finite=(v:unknown,min:number,max:number)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
-  if(typeof s.name!=='string'||s.name.length>30||!/^#[0-9a-f]{6}$/i.test(s.color)||!finite(s.day,1,100000)||!Number.isInteger(s.day)||!finite(s.minutes,0,1440)||!finite(s.coins,0,1e9)||!finite(s.revision,0,1e9)||!finite(s.nextId,1,1e9)||typeof s.started!=='boolean'||!['home','town'].includes(s.scene))throw Error('Invalid player or world data.');
+  if(typeof s.name!=='string'||s.name.length>30||!/^#[0-9a-f]{6}$/i.test(s.color)||!finite(s.day,1,100000)||!Number.isInteger(s.day)||!finite(s.minutes,0,1440)||!finite(s.coins,0,1e9)||!finite(s.revision,0,1e9)||!finite(s.nextId,1,1e9)||typeof s.started!=='boolean'||!['home','town','cafe'].includes(s.scene))throw Error('Invalid player or world data.');
   if(!s.player||!finite(s.player.x,-100,100)||!finite(s.player.z,-100,100))throw Error('Invalid location.');
   if(!s.quests||!['new','active','done'].includes(s.quests.delivery)||!['new','active','found','done'].includes(s.quests.anomaly)||!['new','active','done'].includes(s.quests.stickers))throw Error('Invalid quest data.');
   // Additive migration: existing schema-1 saves keep all their progress.
   if(s.quests.mintDate===undefined)s.quests.mintDate='new';
   if(s.mintDateDrink===undefined)s.mintDateDrink=null;
+  if(s.mintDateOrder===undefined)s.mintDateOrder=null;
+  if(s.cafeDrink===undefined)s.cafeDrink=null;
+  for(const drink of [s.mintDateOrder,s.cafeDrink])if(drink!==null&&(typeof drink!=='string'||!Object.hasOwn(CAFE_DRINKS,drink)))throw Error('Invalid café order.');
+  if(s.mintDateOrder!==null&&s.quests.mintDate!=='cafe')throw Error('Invalid date order.');
   if(s.mintAtHome===undefined)s.mintAtHome=false;
   if(s.selectedMission===undefined)s.selectedMission=null;
   if(s.skippedMissions===undefined)s.skippedMissions=[];
@@ -108,7 +134,7 @@ export function validateSave(value:unknown):GameState {
   if(s.skippedMissions.some(id=>s.quests[id]!=='done'))throw Error('Invalid skipped mission.');
   if(s.mintAtHome&&!['apartment','snuggle','done'].includes(s.quests.mintDate))throw Error('Invalid Mint visit.');
   if(s.quests.mintDate==='snuggle'&&!s.mintAtHome)throw Error('Mint must be at home for this scene.');
-  if(!['new','cafe','canal','apartment','snuggle','done'].includes(s.quests.mintDate)||![null,'soda','tea'].includes(s.mintDateDrink))throw Error('Invalid Mint date data.');
+  if(!['new','cafe','canal','apartment','snuggle','done'].includes(s.quests.mintDate)||(s.mintDateDrink!==null&&!Object.hasOwn(CAFE_DRINKS,s.mintDateDrink)))throw Error('Invalid Mint date data.');
   if(s.quests.mintDate!=='new'&&s.quests.delivery!=='done')throw Error('Mint’s date requires the parcel delivery.');
   if((['canal','apartment','snuggle','done'].includes(s.quests.mintDate))!==!!s.mintDateDrink)throw Error('Invalid Mint date progress.');
   for(const a of [s.collected,s.rewards])if(!Array.isArray(a)||a.length>500||a.some(v=>typeof v!=='string')||new Set(a).size!==a.length)throw Error('Invalid journal data.');

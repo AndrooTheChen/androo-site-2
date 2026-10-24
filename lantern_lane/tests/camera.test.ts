@@ -44,3 +44,13 @@ test('conversation orbit covers all four sides and default framing leaves room f
     }
   }
 });
+
+test('café overview fits the room on desktop and phone; close zoom follows the player',async()=>{
+  const {cafeCameraFrame}=await import('../src/camera.ts');
+  for(const [width,height]of [[1360,936],[390,844]]){
+    const player=new THREE.Vector3(4.8,0,3.2),frame=cafeCameraFrame(player,1,width/height);
+    const camera=new THREE.PerspectiveCamera(38,width/height,.1,160);camera.position.copy(frame.position);camera.lookAt(frame.look);camera.updateMatrixWorld();
+    for(const x of [-7,7])for(const z of [-5,5]){const projected=new THREE.Vector3(x,0,z).project(camera);assert.ok(Math.abs(projected.x)<1&&Math.abs(projected.y)<1,`room outside ${width} × ${height}: ${projected.toArray()}`);}
+    const close=cafeCameraFrame(player,.45,width/height);assert.equal(close.look.x,player.x);assert.equal(close.look.z,player.z);
+  }
+});

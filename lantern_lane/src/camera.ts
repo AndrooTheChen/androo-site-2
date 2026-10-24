@@ -14,6 +14,12 @@ export function townCameraFrame(player:THREE.Vector3,zoom:number,narrow:boolean,
   return {look,position:look.clone().add(new THREE.Vector3(21,27,32).multiplyScalar(clampZoom(zoom)*(narrow?.85:1.04)))};
 }
 
+export function cafeCameraFrame(player:THREE.Vector3,zoom:number,aspect:number){
+  const look=new THREE.Vector3(0,.35,-.3).lerp(new THREE.Vector3(player.x,.9,player.z),1-THREE.MathUtils.smoothstep(zoom,.45,.9));
+  const fit=Math.max(1,1.12/Math.max(.3,aspect));
+  return {look,position:look.clone().add(new THREE.Vector3(12,13,17).multiplyScalar(clampZoom(zoom,true)*fit))};
+}
+
 // Framing reserves space for the dialogue panel. Orbit changes the camera,
 // never the character's facing or gameplay position.
 export function conversationCameraFrame(position:THREE.Vector3,facing:number,orbit:number,zoom:number,width:number,height:number,reclining=false){
