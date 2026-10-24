@@ -54,3 +54,7 @@ The navigation link opens the full browser game in a new tab at `/lantern_lane/`
 - Character model handoff: [`lantern_lane/docs/character-integration.md`](lantern_lane/docs/character-integration.md).
 
 Push to `main` to run the existing Pages workflow, which installs, builds, checks, and deploys both together. Progress is stored in each visitor’s browser. Export/import a save to transfer progress from the original demo origin.
+
+## Raspberry Pi health
+
+The **Pi Health** navigation link opens `/health/`, a read-only dashboard for host CPU, RAM, temperature, uptime, disks, Nextcloud and Afterglow. Live data comes directly from a private, identity-protected Tailscale endpoint. The public static site contains no readings or credentials. See [setup, security and operating notes](monitoring/README.md).

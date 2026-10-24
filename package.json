@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/check.mjs && npm --prefix lantern_lane test",
+    "check": "node scripts/check.mjs && npm --prefix lantern_lane test && python3 -m unittest discover -s tests -p 'test_*.py'",
     "game:dev": "npm --prefix lantern_lane run dev"
   },
   "dependencies": {

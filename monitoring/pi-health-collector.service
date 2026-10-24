@@ -1,0 +1,30 @@
+[Unit]
+Description=Read-only Raspberry Pi health collector
+After=docker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/pi-health/collector.py
+Restart=on-failure
+RestartSec=5
+RuntimeDirectory=pi-health
+RuntimeDirectoryMode=0755
+UMask=0022
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX
+LockPersonality=yes
+RestrictSUIDSGID=yes
+ReadWritePaths=/run/pi-health
+Nice=10
+CPUQuota=15%
+MemoryMax=96M
+
+[Install]
+WantedBy=multi-user.target
