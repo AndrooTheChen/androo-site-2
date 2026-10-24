@@ -11,6 +11,7 @@ WEB = Path('/opt/pi-health/web')
 STATIC = {'/': ('index.html', 'text/html; charset=utf-8'),
           '/health/': ('index.html', 'text/html; charset=utf-8'),
           '/health.js': ('health.js', 'text/javascript; charset=utf-8'),
+          '/health-auto.js': ('health.js', 'text/javascript; charset=utf-8'),
           '/health.css': ('health.css', 'text/css; charset=utf-8'),
           '/styles.css': ('styles.css', 'text/css; charset=utf-8'),
           '/favicon.svg': ('favicon.svg', 'image/svg+xml')}

@@ -57,4 +57,4 @@ Push to `main` to run the existing Pages workflow, which installs, builds, check
 
 ## Raspberry Pi health
 
-The **Pi Health** navigation link opens `/health/`, a read-only dashboard for host CPU, RAM, temperature, uptime, disks, Nextcloud and Afterglow. Live data comes directly from a private, identity-protected Tailscale endpoint. The public static site contains no readings or credentials. See [setup, security and operating notes](monitoring/README.md).
+The **Pi Health** navigation link opens the private dashboard directly using your Tailscale identity, with no endpoint to paste. The public `/health/` page also provides a preconfigured link. This is a read-only dashboard for host CPU, RAM, temperature, uptime, disks, Nextcloud and Afterglow. Live data comes directly from a private, identity-protected Tailscale endpoint. The public static site contains no readings or credentials. See [setup, security and operating notes](monitoring/README.md).

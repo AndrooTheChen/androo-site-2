@@ -27,9 +27,11 @@ The installer creates `/etc/pi-health/config.json` and `/etc/pi-health/api.env` 
 
 The new private Serve route uses HTTPS port 9443 → loopback port 9101, preserving existing routes on 443 and 8443. Never use `tailscale funnel`, router port forwarding, or a public reverse proxy for it. Installation restarts only the two new monitoring services, not Docker, Nextcloud, Afterglow, Tailscale or the Pi.
 
-On `/health/`, enter the private address shown by `tailscale serve status`, including `:9443`. It is remembered in this browser's local storage; no credential is stored. Alternatively, open `/health/#endpoint=` followed by the URL-encoded private address. The fragment is not sent to the website server and is removed from the address bar after use. Do not commit your endpoint or connection link to the public repo.
+Click **Pi Health** in the site navigation while connected to Tailscale. It opens the private dashboard directly and signs you in using your approved Tailscale identity. No address, password, token, fragment or browser-local setup is needed. The public `/health/` page also has a preconfigured **Open private dashboard** button and attempts to load measurements automatically.
 
-Tailscale must be connected on the viewing device. Some browsers require local network permission for a public page to reach a private server; grant it only to your own site. The page explains connection failures and retries. If the browser blocks public-to-private fetches, **Open private view** opens the same dashboard directly on the Pi, where its API is on the same origin. The private view and its fixed asset paths require the same approved Tailscale identity. Public navigation links return to androochen.com. A visitor outside the tailnet cannot reach the API; another Tailscale identity is denied even if it can reach the device. Tagged clients without a user identity are denied. Permission rules in the tailnet still apply.
+The routing address is intentionally published in `src/health-config.mjs` and navigation links. It is not a credential; access is enforced by the private network and the API's user allowlist. The allowed user and runtime configuration remain only on the Pi. A visitor outside the tailnet cannot reach the API; another Tailscale identity is denied even if it can reach the device. Tagged clients without a user identity are denied. Tailnet permission rules still apply.
+
+Some browsers block public-to-private fetches. Direct navigation to the private view avoids that restriction because the dashboard and API share an origin. Public navigation links return to androochen.com.
 
 ## Interpreting the measurements
 

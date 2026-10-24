@@ -1,17 +1,13 @@
 const $ = id => document.getElementById(id);
 const root = $('health-dashboard');
-const storageKey = 'pi-health-endpoint';
-let endpoint = '', timer, controller, generation = 0, lastSample = null;
+const privateView = location.hostname.endsWith('.ts.net');
+const endpoint = privateView ? location.origin : root.dataset.endpoint;
+let timer, controller, generation = 0, lastSample = null;
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const percent = value => finite(value) ? `${value.toFixed(1)}%` : '—';
 const bytes = value => !finite(value) ? '—' : value >= 2 ** 30 ? `${(value / 2 ** 30).toFixed(1)} GiB` : `${(value / 2 ** 20).toFixed(0)} MiB`;
 const safe = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
 function meter(value) { return Math.max(0, Math.min(100, finite(value) ? value : 0)); }
-function address(value) {
-  const url = new URL(value);
-  if (url.protocol !== 'https:' || !url.hostname.endsWith('.ts.net') || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw Error('Use your Pi’s HTTPS Tailscale address, without a path or credentials.');
-  return url.origin;
-}
 function state(name, label, message = '') {
   root.dataset.connection = name;
   $('connection-state').textContent = label;
@@ -86,45 +82,22 @@ async function refresh() {
     const data = await response.json();
     if (current !== generation) return;
     render(data);
-    $('health-fallback').hidden = true;
-    $('connection-panel').open = false;
   } catch (error) {
     if (current !== generation) return;
-    const message = error.name === 'TypeError' || error.name === 'AbortError' ? 'Cannot reach your Pi. Turn on Tailscale and check the address. If your browser asks for local network access, allow it for this page. Retrying every 5 seconds.' : error.message;
+    const message = error.name === 'TypeError' || error.name === 'AbortError' ? (privateView ? 'Cannot reach your Pi. Check that Tailscale is connected and the Pi is on. Retrying every 5 seconds.' : 'Turn on Tailscale, then choose Open private dashboard above. Your browser may block private data from loading directly on this public page.') : error.message;
     state(lastSample ? 'stale' : 'error', lastSample ? 'Stale · reconnecting' : 'Unavailable', message + (lastSample ? ' Values below are the last received sample.' : ''));
-    $('health-fallback').hidden = location.origin === endpoint;
-    if (!lastSample) $('connection-panel').open = true;
   } finally {
     clearTimeout(timeout);
     if (current === generation) { $('refresh-health').disabled = false; timer = setTimeout(refresh, 5000); }
   }
 }
-function connect(url) {
-  endpoint = address(url);
-  $('health-endpoint').value = endpoint;
-  $('private-view').href = endpoint + '/health/';
-  try { localStorage.setItem(storageKey, endpoint); } catch {}
-  $('disconnect-health').hidden = false;
-  state('connecting', 'Connecting', 'Opening the private connection…');
-  refresh();
-}
-$('connect-health').addEventListener('submit', event => {
-  event.preventDefault();
-  try { connect($('health-endpoint').value.trim()); } catch (error) { $('health-message').textContent = error.message; }
-});
-$('disconnect-health').addEventListener('click', () => {
-  generation++; controller?.abort(); clearTimeout(timer);
-  try { localStorage.removeItem(storageKey); } catch {}
-  location.reload();
-});
 $('refresh-health').addEventListener('click', refresh);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { generation++; controller?.abort(); clearTimeout(timer); if (endpoint) state(lastSample ? 'stale' : 'disconnected', 'Paused', 'Updates paused while this tab is hidden.'); }
   else if (endpoint) refresh();
 });
-let initial = '';
-try {
-  initial = location.hostname.endsWith('.ts.net') ? location.origin : new URLSearchParams(location.hash.slice(1)).get('endpoint') || localStorage.getItem(storageKey) || '';
-  if (location.hash.startsWith('#endpoint=')) history.replaceState(null, '', location.pathname + location.search);
-  if (initial) connect(initial);
-} catch (error) { $('health-message').textContent = error.message; }
+$('connection-panel').hidden = privateView;
+// Old bookmarked connection fragments remain harmless; routing is now preconfigured.
+if (location.hash.startsWith('#endpoint=')) history.replaceState(null, '', location.pathname + location.search);
+state('connecting', 'Connecting', 'Connecting securely through Tailscale…');
+refresh();
