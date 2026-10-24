@@ -2,13 +2,14 @@
 
 A browser-first, cozy 3D neighborhood in Hethereau. This is a personal, unofficial NTE fan prototype, built from the October 23, 2026 NTE Cozy Neighborhood Game Plan. Mint now uses an optimized textured reconstruction; the other character models are being developed separately.
 
-## Playable in 0.2
+## Playable in 0.3
 
 - A pedestrian block with apartments, café frontage, antique shop, courtyard, alley, and canal.
 - Click/tap pathfinding, keyboard movement, touch joystick, collision, camera follow, zoom, interaction prompts, and map wayfinding.
 - Mint's parcel delivery, Hotori's wandering-clock appraisal, Nanally's optional three-sticker hunt, and a forgiving fishing activity.
+- F interacts and advances the primary conversation choice. Q opens the mission board; select a tracked mission, replay, skip, or jump directly to any step for testing. Earned rewards and furniture survive replay; rewards are issued only once.
 - Closer zoom that follows the player; clear conversation close-ups with drag, orbit buttons, keyboard arrows, and zoom controls.
-- “First date with Mint,” unlocked after the parcel delivery: a café drink choice, canal rendezvous, +20 friendship (capped at 100), and a saved café-receipt keepsake. Mint walks to each stop and waits.
+- “First date with Mint,” unlocked after the parcel delivery: a café drink choice, canal rendezvous, apartment invitation and cozy bed scene, +20 friendship (capped at 100), and a saved café-receipt keepsake. Mint walks to outdoor stops, visits your apartment, and stays on the bed until you ask her to return to the courtyard. The bed scene uses a static reclining pose, not a skeletal animation.
 - Currency, unique reward claims, once-per-day greeting friendship, seven purchasable furniture types, and a keepsake reward.
 - Apartment interior, sleep, furniture placement, quarter-meter snapping, rotation, storage, and session undo. Doorway and bed access remain clear.
 - A 36-active-minute day, evening lighting, deterministic rain every third simulated day, menu/focus pausing, optional reward chimes, and reduced motion.
@@ -34,6 +35,7 @@ The repository root build runs this build and copies `lantern_lane/dist/` into t
 | `src/main.ts` | Input, UI, dialogue flows, camera, activity orchestration |
 | `src/camera.ts` | Zoom limits, conversation framing, facing, and foreground cutaway |
 | `src/world.ts` | Procedural 3D scenery, stand-ins, GLB adapter, collisions and A* navigation |
+| `src/missions.ts` | Mission tracking, replay, skip and checkpoint jumps for testing |
 | `src/state.ts` | Pure quest, economy, friendship, placement and save-validation rules |
 | `src/content.ts` | Stable content IDs, catalog, characters and ambient dialogue |
 | `src/save.ts` | Serialized IndexedDB writes and valid backup recovery |
@@ -51,3 +53,19 @@ See [model integration](docs/character-integration.md), [next milestones](docs/r
 ## Save portability
 
 Saves remain browser-local and origin-specific. To move progress from the original private demo, export it in Settings there, then import that JSON file on this site. The save schema and database name remain compatible.
+
+
+## Testing a mission
+
+Open **Missions (Q)** or click the objective card. Select a mission to track it,
+choose **Play / Replay from start**, **Skip mission**, or a checkpoint and **Jump**.
+Jumping teleports to that step and saves immediately. Skips do not grant rewards;
+replays retain existing coins, friendship, keepsakes and furniture. Replaying the
+parcel resets the dependent date’s current progress. Starting the date from this
+menu bypasses its parcel prerequisite for testing.
+
+To try the new ending immediately: select **First date with Mint**, jump to
+**4. Bring Mint home**, and press **F** beside the bed. Snuggle, finish the date,
+and choose **Head back to the courtyard** to restore Mint’s normal position,
+orientation, scale and roaming. Previous completed-date saves stay completed;
+replay or jump to experience the new ending.

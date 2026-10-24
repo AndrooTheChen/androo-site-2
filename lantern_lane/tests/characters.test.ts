@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as THREE from 'three';
-import {installCharacterModel,makeActor} from '../src/world.ts';
+import {installCharacterModel,makeActor,layActorOnBed,standActor} from '../src/world.ts';
 
 test('imported character is grounded, faces forward, and retains the gameplay root',()=>{
   const actor=makeActor('#00aaaa','#00dddd','mint'),previous=actor.visual;
@@ -68,4 +68,20 @@ test('Mint ships with embedded textures, finite geometry and a bounded game asse
   assert.equal(gltf.skins?.length??0,0);
   assert.equal(gltf.animations?.length??0,0);
   console.log(JSON.stringify({mintTriangles:triangles,mintBytes:data.length}));
+});
+
+
+test('the real Mint geometry fits the bed and a late GLB load preserves the reclining pose',()=>{
+  const data=readFileSync(new URL('../public/assets/characters/mint.glb',import.meta.url));
+  const length=data.readUInt32LE(12),gltf=JSON.parse(data.subarray(20,20+length).toString()),binary=data.subarray(28+length);
+  const primitive=gltf.meshes[0].primitives[0],accessor=gltf.accessors[primitive.attributes.POSITION],view=gltf.bufferViews[accessor.bufferView];
+  const positions=new Float32Array(accessor.count*3),offset=(view.byteOffset??0)+(accessor.byteOffset??0);
+  for(let i=0;i<accessor.count;i++)for(let k=0;k<3;k++)positions[i*3+k]=binary.readFloatLE(offset+i*(view.byteStride??12)+k*4);
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
+  const actor=makeActor('#00aaaa','#00dddd','mint');layActorOnBed(actor,-3.15);
+  const scene=new THREE.Group();scene.add(new THREE.Mesh(geometry,new THREE.MeshStandardMaterial()));installCharacterModel(actor,{scene,animations:[]},{height:2.2});
+  const bounds=new THREE.Box3().setFromObject(actor.root);
+  assert.ok(Math.abs(bounds.min.y-1.03)<1e-5);assert.ok(bounds.min.x>=-3.875&&bounds.max.x<=-1.525);assert.ok(bounds.min.z>=-3.35&&bounds.max.z<=-.65);
+  assert.equal(actor.root.rotation.x,-Math.PI/2);assert.ok(actor.bedPose);
+  standActor(actor,{x:-2,z:4});assert.equal(actor.bedPose,undefined);const upright=new THREE.Box3().setFromObject(actor.root);assert.ok(Math.abs(upright.min.y)<1e-5);assert.ok(Math.abs(upright.max.y-2.2)<1e-5);
 });

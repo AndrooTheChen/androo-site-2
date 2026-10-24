@@ -1,6 +1,11 @@
-export const CONTENT_VERSION = '0.2.0';
+export const CONTENT_VERSION = '0.3.0';
+export const MISSION_IDS = ['delivery','anomaly','stickers','home','mintDate'] as const;
+export type MissionId = typeof MISSION_IDS[number];
+export const MINT_HOME_SPOT = {x:-1.05,z:-1.6};
+export const MINT_COURTYARD = {x:-2,z:4};
 export const MINT_DATE_STOPS = {
   cafe: { x: -2.5, z: 1, name: 'Morrow Café', hint: 'Meet Mint in front of Morrow Café and choose a drink together.' },
+  apartment: { x:-11, z:-2.4, name:'Lane House', hint:'Bring Mint to your apartment, then talk to her by the bed.' },
   canal: { x: 12, z: 8.5, name: 'Canal walk', hint: 'Meet Mint at the canal overlook for a quiet moment together.' },
 } as const;
 export const CHARACTERS = {

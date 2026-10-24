@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { CATALOG, CHARACTERS, COLLECTIBLES, type ItemId, type CharacterId } from './content';
+import { CATALOG, CHARACTERS, COLLECTIBLES, MINT_HOME_SPOT, MINT_COURTYARD, type ItemId, type CharacterId } from './content';
 import { dimensions, mintDateStop, type GameState, type Placement, type MintDateStage } from './state';
 import { faceToward } from './camera';
 
@@ -36,7 +36,7 @@ function building(p:THREE.Object3D,x:number,z:number,w:number,d:number,h:number,
   return g;
 }
 function optimize(root:THREE.Group){root.updateMatrixWorld(true);const buckets=new Map<THREE.Material,THREE.BufferGeometry[]>();const remove:THREE.Mesh[]=[];root.traverse(o=>{if(o instanceof THREE.Mesh&&!Array.isArray(o.material)&&o.material instanceof THREE.MeshStandardMaterial){const geo=o.geometry.clone();geo.applyMatrix4(o.matrixWorld);if(!buckets.has(o.material))buckets.set(o.material,[]);buckets.get(o.material)!.push(geo);remove.push(o);}});for(const m of remove)m.removeFromParent();for(const [material,gs]of buckets){const merged=mergeGeometries(gs);if(!merged)continue;const m=new THREE.Mesh(merged,material);m.castShadow=true;m.receiveShadow=true;root.add(m);for(const g of gs)g.dispose();}}
-export type Actor={root:THREE.Group;visual:THREE.Group;limbs:THREE.Object3D[];mixer?:THREE.AnimationMixer;actions?:{idle?:THREE.AnimationAction;walk?:THREE.AnimationAction};moving:boolean;phase:number};
+export type Actor={root:THREE.Group;visual:THREE.Group;limbs:THREE.Object3D[];mixer?:THREE.AnimationMixer;actions?:{idle?:THREE.AnimationAction;walk?:THREE.AnimationAction};moving:boolean;phase:number;bedPose?:{x:number;scale:number}};
 export function makeActor(color:string,hair:string,kind='player'):Actor{
   const root=new THREE.Group(),g=group(root);const limbs:THREE.Object3D[]=[];
   for(const x of [-.19,.19]){const leg=group(g,x,.45,0);cyl(leg,0,-.14,0,.13,.12,.5,'#4c6260');ball(leg,0,-.39,.07,.16,'#f5e8cf');limbs.push(leg);}
@@ -47,6 +47,18 @@ export function makeActor(color:string,hair:string,kind='player'):Actor{
   if(kind==='hotori'){ball(g,.39,1.91,.05,.18,'#f5e6cf');box(g,0,1.0,.3,.64,.15,.1,'#c69b68');}
   if(kind==='nanally'){for(const xx of [-.16,.16]){const tor=new THREE.Mesh(new THREE.TorusGeometry(.13,.018,5,14),mat('#564c49'));tor.position.set(xx,1.65,.59);g.add(tor);}box(g,0,1.65,.6,.12,.025,.025,'#564c49');}
   return {root,visual:g,limbs,moving:false,phase:Math.random()*6};
+}
+export function standActor(actor:Actor,position:{x:number;z:number}){
+  actor.bedPose=undefined;actor.root.rotation.set(0,0,0);actor.root.scale.setScalar(1);
+  actor.root.position.set(position.x,0,position.z);actor.visual.position.y=0;actor.moving=false;
+  actor.limbs.forEach(l=>l.rotation.x=0);
+}
+export function layActorOnBed(actor:Actor,x:number,scale=.82){
+  actor.bedPose={x,scale};actor.moving=false;actor.visual.position.y=0;actor.limbs.forEach(l=>l.rotation.x=0);
+  actor.root.rotation.set(-Math.PI/2,0,0);actor.root.scale.setScalar(scale);actor.root.position.set(0,0,0);
+  actor.root.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(actor.root),center=bounds.getCenter(new THREE.Vector3());
+  actor.root.position.set(x-center.x,1.03-bounds.min.y,-1.9-center.z);
+  actor.root.updateMatrixWorld(true);
 }
 // Replace only the visual: the actor root still owns navigation, collision and facing.
 export function installCharacterModel(actor:Actor,gltf:{scene:THREE.Group;animations:THREE.AnimationClip[]},entry:{height?:number;facingOffset?:number}){
@@ -77,6 +89,7 @@ export function installCharacterModel(actor:Actor,gltf:{scene:THREE.Group;animat
   actor.actions=actions;
   previous.removeFromParent();
   previous.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});
+  if(actor.bedPose)layActorOnBed(actor,actor.bedPose.x,actor.bedPose.scale);
 }
 export function furnitureModel(item:ItemId):THREE.Group{
   const g=new THREE.Group();const c=CATALOG[item].color;
@@ -151,11 +164,31 @@ export class World{
     box(root,0,1.7,-4.1,8.4,3.4,.2,'#e6d9bb');box(root,-4.1,1.7,0,.2,3.4,8.4,'#d0d5b8');box(root,4.1,.2,0,.2,.4,8.4,'#e6d9bb');box(root,0,.2,4.1,8.4,.4,.2,'#e6d9bb');
     box(root,0,2,-3.97,2,1.8,.12,'#74978a');box(root,0,2,-3.89,1.8,1.6,.06,'#b0d2c4');box(root,0,2,-3.82,.06,1.65,.07,'#eee4ca');box(root,0,2,-3.82,1.85,.06,.07,'#eee4ca');box(root,0,1.05,-3.75,2.3,.12,.5,'#b9a37f');
     for(const xx of [-1.3,1.3])box(root,xx,2,-3.77,.4,2,.1,'#d9ad8a');
-    box(root,-2.7,.35,-2,1.7,.7,2.8,'#ac8e6c');box(root,-2.7,.78,-2,1.7,.25,2.7,'#f4e6c9');box(root,-2.7,.94,-2.8,1.3,.2,.55,'#f4e9d2');box(root,-2.7,.94,-1.6,1.7,.12,1.65,'#8da697');box(root,-2.7,1,-3.45,1.8,1,.12,'#bd9b74');
+    box(root,-2.7,.35,-2,2.35,.7,2.8,'#ac8e6c');box(root,-2.7,.78,-2,2.35,.25,2.7,'#f4e6c9');box(root,-2.7,.94,-2.8,2.1,.2,.55,'#f4e9d2');box(root,-2.7,.94,-1.6,2.35,.12,1.65,'#8da697');box(root,-2.7,1,-3.45,2.4,1,.12,'#bd9b74');
     textSign(root,'a little place to belong',2.4,2.2,-3.96,1.6,.7,'#d8b389','#fff2d7');box(root,0,.075,3.4,1.4,.03,.7,'#879d86');optimize(root);this.home.add(this.furniture);
   }
   rebuildFurniture(s:GameState){this.furniture.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});this.furniture.clear();for(const f of s.furniture){if(!f.placement)continue;const g=furnitureModel(f.item);g.name=f.id;g.position.set(f.placement.x,.07,f.placement.z);g.rotation.y=f.placement.rotation*Math.PI/180;this.furniture.add(g);}}
-  setScene(id:'town'|'home',s:GameState){this.sceneId=id;this.town.visible=id==='town';this.home.visible=id==='home';for(const a of this.actors.values())a.root.visible=id==='town';this.player.root.position.set(s.player.x,0,s.player.z);this.rebuildFurniture(s);this.marker.visible=false;}
+  setScene(id:'town'|'home',s:GameState){this.sceneId=id;this.town.visible=id==='town';this.home.visible=id==='home';for(const a of this.actors.values())a.root.visible=id==='town';standActor(this.player,s.player);this.rebuildFurniture(s);this.marker.visible=false;this.syncMint(s);}
+  syncMint(s:GameState,reset=false){
+    const mint=this.actors.get('mint')!;
+    if(s.mintAtHome){
+      if(mint.root.parent!==this.home||reset){this.home.add(mint.root);standActor(mint,MINT_HOME_SPOT);}
+      if(s.quests.mintDate==='snuggle'||s.quests.mintDate==='done'){
+        if(!mint.bedPose)layActorOnBed(mint,-3.15);
+      }else if(mint.bedPose)standActor(mint,MINT_HOME_SPOT);
+      mint.root.visible=s.scene==='home';this.mintRoute=[];this.mintDateStage=s.quests.mintDate;
+    }else{
+      if(mint.root.parent!==this.town||reset){
+        this.town.add(mint.root);standActor(mint,reset?(mintDateStop(s)??MINT_COURTYARD):MINT_COURTYARD);
+        this.mintRoute=[];this.mintDateStage='unset';
+      }
+      mint.root.visible=s.scene==='town';
+    }
+  }
+  setSnuggleView(s:GameState,active:boolean){
+    if(active&&!this.player.bedPose)layActorOnBed(this.player,-2.15,.82);
+    else if(!active&&this.player.bedPose)standActor(this.player,s.player);
+  }
   updatePickups(s:GameState){for(const [id,g]of this.pickups)g.visible=!s.collected.includes(id)&&(id!=='odd-clock'||s.quests.anomaly==='active');}
   blocked(x:number,z:number,s:GameState,r=.3):boolean {if(this.sceneId==='home'){if(Math.abs(x)>3.65-r||Math.abs(z)>3.7-r)return true;if(x< -1.5+r&&z< -.5+r)return true;return s.furniture.some(f=>{if(!f.placement||f.item==='rug')return false;const [w,d]=dimensions(f.item,f.placement.rotation);return Math.abs(f.placement.x-x)<w/2+r&&Math.abs(f.placement.z-z)<d/2+r;});}
     if(x< -17.3+r||x>14.8-r||z< -4.7+r||z>13.7-r)return true;return this.obstacles.some(o=>Math.abs(x-o.x)<o.w/2+r&&Math.abs(z-o.z)<o.d/2+r);
@@ -176,7 +209,7 @@ export class World{
       this.mintDateStage=stage;
     }
     for(const [id,a]of this.actors){
-      a.moving=false;
+      a.moving=false;if(id==='mint'&&s.mintAtHome)continue;
       if(id==='mint'&&(stop||this.mintRoute.length)){
         const next=this.mintRoute[0];
         if(next){const delta=next.clone().sub(a.root.position),distance=delta.length();
@@ -211,6 +244,6 @@ export class World{
     const dateStop=mintDateStop(s);this.dateMarker.visible=!!dateStop;
     if(dateStop)this.dateMarker.position.set(dateStop.x,.13,dateStop.z);
     for(const [id,g]of this.pickups)if(!paused&&!s.settings.reducedMotion){g.position.y=.8+Math.sin(time*2+id.length)*.12;g.rotation.y+=dt*.7;}
-    for(const a of [this.player,...this.actors.values()]){if(a.mixer){a.mixer.update(paused?0:dt);if(a.actions?.walk){const walking=a.moving&&!paused;a.actions.walk.enabled=walking;if(walking&&!a.actions.walk.isRunning())a.actions.walk.play();if(a.actions.idle)a.actions.idle.enabled=!walking;}}else{a.visual.position.y=paused||s.settings.reducedMotion?0:(a.moving?Math.sin(time*14)*.045:Math.sin(time*2+a.phase)*.025);a.limbs.forEach((l,i)=>l.rotation.x=a.moving&&!paused?Math.sin(time*12+i%2*Math.PI)*.45:0);}}
+    for(const a of [this.player,...this.actors.values()]){if(a.bedPose)continue;if(a.mixer){a.mixer.update(paused?0:dt);if(a.actions?.walk){const walking=a.moving&&!paused;a.actions.walk.enabled=walking;if(walking&&!a.actions.walk.isRunning())a.actions.walk.play();if(a.actions.idle)a.actions.idle.enabled=!walking;}}else{a.visual.position.y=paused||s.settings.reducedMotion?0:(a.moving?Math.sin(time*14)*.045:Math.sin(time*2+a.phase)*.025);a.limbs.forEach((l,i)=>l.rotation.x=a.moving&&!paused?Math.sin(time*12+i%2*Math.PI)*.45:0);}}
   }
 }

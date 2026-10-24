@@ -16,12 +16,12 @@ export function townCameraFrame(player:THREE.Vector3,zoom:number,narrow:boolean,
 
 // Framing reserves space for the dialogue panel. Orbit changes the camera,
 // never the character's facing or gameplay position.
-export function conversationCameraFrame(position:THREE.Vector3,facing:number,orbit:number,zoom:number,width:number,height:number){
+export function conversationCameraFrame(position:THREE.Vector3,facing:number,orbit:number,zoom:number,width:number,height:number,reclining=false){
   const stacked=width<900,aspect=width/height;
   const distance=5.8*THREE.MathUtils.clamp(zoom,.65,1.4)*(stacked?Math.max(1, .55/aspect):1);
   const angle=facing+orbit;
-  const look=position.clone().add(new THREE.Vector3(0,1.15+(1-Math.min(1,zoom))*.7,0));
-  return {look,position:look.clone().add(new THREE.Vector3(Math.sin(angle)*distance,distance*.23,Math.cos(angle)*distance)),offsetX:stacked?0:width*.2,offsetY:stacked?height*.2:0};
+  const look=position.clone().add(new THREE.Vector3(0,(reclining?0:1.15+(1-Math.min(1,zoom))*.7),0));
+  return {look,position:look.clone().add(new THREE.Vector3(Math.sin(angle)*distance,distance*(reclining?.85:.23),Math.cos(angle)*distance)),offsetX:stacked?0:width*.2,offsetY:stacked?height*.2:0};
 }
 
 // A close-up cuts away foreground scenery (including nearby trees)

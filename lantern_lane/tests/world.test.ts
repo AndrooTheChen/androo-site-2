@@ -14,7 +14,7 @@ test('scene geometry stays finite, world remains within scale budget, and textur
 
 test('Mint walks collision-free to both date stops, waits there, pauses indoors, and resumes after reload',()=>{
   const s=initialState();s.quests.delivery='done';const w=new World(s),mint=w.actors.get('mint')!;
-  for(const [stage,x,z]of [['cafe',-2.5,1],['canal',12,8.5]] as const){
+  for(const [stage,x,z]of [['cafe',-2.5,1],['canal',12,8.5],['apartment',-11,-2.4]] as const){
     s.quests.mintDate=stage;
     for(let frame=0;frame<1500;frame++){w.updateNPCs(s,.04);assert.equal(w.blocked(mint.root.position.x,mint.root.position.z,s),false,'Mint walked through scenery');}
     assert.ok(Math.hypot(mint.root.position.x-x,mint.root.position.z-z)<.15);
@@ -25,4 +25,15 @@ test('Mint walks collision-free to both date stops, waits there, pauses indoors,
   s.scene='town';w.setScene('town',s);s.quests.mintDate='done';
   for(let i=0;i<1500;i++){w.updateNPCs(s,.04);assert.equal(w.blocked(mint.root.position.x,mint.root.position.z,s),false);}
   assert.ok(Math.hypot(mint.root.position.x+2,mint.root.position.z-4)<1);
+});
+
+test('Mint’s apartment visit reparents and reclines her, survives reload, and restores her courtyard transform',()=>{
+  const s=initialState();s.quests.delivery='done';s.quests.mintDate='snuggle';s.mintDateDrink='tea';s.mintAtHome=true;s.scene='home';s.player={x:-1.05,z:-1.6};
+  const w=new World(s),mint=w.actors.get('mint')!;assert.equal(mint.root.parent,w.home);assert.equal(mint.root.visible,true);assert.ok(mint.bedPose);assert.equal(mint.root.rotation.x,-Math.PI/2);
+  const restPosition=mint.root.position.clone();w.tick(.04,1,s,false);assert.ok(mint.root.position.equals(restPosition));assert.equal(mint.visual.position.y,0);
+  w.setSnuggleView(s,true);assert.ok(w.player.bedPose);w.setSnuggleView(s,false);assert.equal(w.player.bedPose,undefined);assert.deepEqual(w.player.root.position.toArray(),[-1.05,0,-1.6]);assert.equal(w.player.root.rotation.x,0);
+  s.scene='town';w.setScene('town',s);assert.equal(mint.root.visible,false);w.updateNPCs(s,1);assert.ok(mint.root.position.equals(restPosition));
+  s.scene='home';w.setScene('home',s);assert.equal(mint.root.visible,true);assert.ok(new World(s).actors.get('mint')!.bedPose);
+  s.quests.mintDate='done';s.mintAtHome=false;w.syncMint(s);assert.equal(mint.root.parent,w.town);assert.equal(mint.bedPose,undefined);assert.deepEqual(mint.root.position.toArray(),[-2,0,4]);assert.deepEqual(mint.root.scale.toArray(),[1,1,1]);assert.equal(mint.root.rotation.x,0);assert.equal(mint.root.visible,false);
+  s.scene='town';w.setScene('town',s);assert.equal(mint.root.visible,true);
 });

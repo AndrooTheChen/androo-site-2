@@ -1,8 +1,8 @@
-# Validation — prototype 0.2
+# Validation — prototype 0.3
 
 ## Automated checks
 
-23 Node tests cover:
+29 Node tests cover:
 
 - Prerequisite gating and duplicate protection for delivery, appraisal and stickers.
 - Unique furniture instances, insufficient-funds rollback and non-purchasable reward items.
@@ -101,3 +101,48 @@ Manual checks on a WebGL-capable device:
    test save.
 5. Repeat the camera and dialogue controls in phone portrait / landscape and
    reduced-motion mode. Ensure the full dialogue and buttons remain scrollable.
+
+
+## Mission controls and apartment ending — October 23, 2026
+
+The suite now has 29 tests. All five missions support tracking, skip, replay and
+every checkpoint jump, including date prerequisite bypass. Tests repeat reward
+claims over three complete replays and confirm coins, friendship and keepsakes
+are not duplicated. Replaying delivery resets its dependent date without deleting
+past rewards. Legacy completed dates and home-decoration progress migrate intact.
+
+The date continues from the canal to an apartment invitation, then a snuggle
+conversation beside the bed. Mint and the player use static, fully clothed
+reclining poses during that conversation; Mint stays resting after completion.
+The “Head back to the courtyard” response restores her default gameplay root,
+scale, rotation and town parent. Replays and skips also clean up visitor state.
+Tests cover visit reload, leaving and reentering home, pausing motion while lying,
+the player getting up, and a GLB arriving after the reclining pose was applied.
+Actual Mint vertex bounds fit the mattress footprint without sinking into it.
+
+F replaces E in world interaction, button labels and instructions. It also
+activates the primary conversation/discovery action without key-repeat advancing
+multiple choices. Q opens Missions; select fields retain normal typing/arrow
+behavior, and the modal focus loop includes them. Escape closes the menu.
+
+Manual playthrough additions on a WebGL-capable device:
+
+- Use F for a conversation, parcel handoff, pickup and doorway; verify E no longer
+  interacts. Confirm held F does not skip multiple lines and touch buttons work.
+- Open Q; track each mission, skip, replay and jump. Reload and verify selected
+  mission/status, inventory and reward history. Check narrow-phone menu scrolling.
+- Jump to date step 4, use F by the bed, and start the snuggle. Inspect both models,
+  orbit/reset the view, close the conversation and return. Finish, leave/reenter
+  home, reload, and choose the courtyard response; check Mint is upright outside.
+- Replay and skip the date while Mint is visiting, then confirm no duplicate
+  visitor, stale pose or outdoor interaction prompt remains in the wrong scene.
+
+This environment still cannot render WebGL. State, geometry and route checks do
+not verify the rendered bed pose, animation transitions or a full gameplay run.
+
+
+The mission-board HTML was rendered from the actual menu function and stylesheet
+in isolated desktop and phone layout fixtures. A phone horizontal-overflow issue
+was corrected with shrinkable grid tracks; the final phone modal measured 317px
+client width and 317px scroll width. Its longer content remains vertically
+scrollable. This validates menu layout only, not in-game controls or WebGL.

@@ -1,13 +1,13 @@
-import { CATALOG, CONTENT_VERSION, MINT_DATE_STOPS, type ItemId, type CharacterId } from './content';
-export type MintDateStage = 'new'|'cafe'|'canal'|'done';
+import { CATALOG, CONTENT_VERSION, MINT_DATE_STOPS, MINT_HOME_SPOT, MISSION_IDS, type MissionId, type ItemId, type CharacterId } from './content';
+export type MintDateStage = 'new'|'cafe'|'canal'|'apartment'|'snuggle'|'done';
 export type DateDrink = 'soda'|'tea';
 export type Placement = {x:number; z:number; rotation:number};
 export type Furniture = {id:string; item:ItemId; placement:Placement|null};
 export type GameState = {
   schemaVersion:1; contentVersion:string; revision:number; name:string; color:string;
   day:number; minutes:number; coins:number; scene:'town'|'home'; player:{x:number;z:number};
-  quests:{delivery:'new'|'active'|'done'; anomaly:'new'|'active'|'found'|'done'; stickers:'new'|'active'|'done'; mintDate:MintDateStage};
-  mintDateDrink:DateDrink|null;
+  quests:{delivery:'new'|'active'|'done'; anomaly:'new'|'active'|'found'|'done'; stickers:'new'|'active'|'done'; mintDate:MintDateStage; home:'new'|'bought'|'done'};
+  mintDateDrink:DateDrink|null; mintAtHome:boolean; selectedMission:MissionId|null; skippedMissions:MissionId[];
   collected:string[]; rewards:string[]; furniture:Furniture[]; nextId:number;
   friendship:Record<CharacterId,number>; greeted:Record<string,number>;
   settings:{sound:boolean; reducedMotion:boolean}; started:boolean;
@@ -15,7 +15,7 @@ export type GameState = {
 export function initialState():GameState {return {
   schemaVersion:1,contentVersion:CONTENT_VERSION,revision:0,name:'Neighbor',color:'#e7aa74',
   day:1,minutes:16*60+20,coins:500,scene:'town',player:{x:-3,z:8},
-  quests:{delivery:'new',anomaly:'new',stickers:'new',mintDate:'new'},mintDateDrink:null,collected:[],rewards:[],
+  quests:{delivery:'new',anomaly:'new',stickers:'new',mintDate:'new',home:'new'},mintDateDrink:null,mintAtHome:false,selectedMission:null,skippedMissions:[],collected:[],rewards:[],
   furniture:[{id:'f-1',item:'rug',placement:{x:0,z:0,rotation:0}}],nextId:2,
   friendship:{mint:0,nanally:0,hotori:0},greeted:{},settings:{sound:false,reducedMotion:false},started:false,
 };}
@@ -27,9 +27,9 @@ export function reward(s:GameState,key:string,coins:number,friends:CharacterId[]
 export function greet(s:GameState,who:CharacterId) { if(s.greeted[who]!==s.day){s.greeted[who]=s.day;s.friendship[who]=Math.min(100,s.friendship[who]+2);} }
 export function completeDelivery(s:GameState):boolean {
   if(s.quests.delivery!=='active')return false;
-  s.quests.delivery='done';return reward(s,'delivery-intro',120,['mint','nanally']);
+  s.quests.delivery='done';reward(s,'delivery-intro',120,['mint','nanally']);return true;
 }
-export function mintDateStop(s:GameState){return s.quests.mintDate==='cafe'||s.quests.mintDate==='canal'?MINT_DATE_STOPS[s.quests.mintDate]:null;}
+export function mintDateStop(s:GameState){const stage=s.quests.mintDate;return stage==='cafe'||stage==='canal'||(stage==='apartment'&&!s.mintAtHome)?MINT_DATE_STOPS[stage]:null;}
 export function beginMintDate(s:GameState):boolean {
   if(s.quests.delivery!=='done'||s.quests.mintDate!=='new'||s.scene!=='town')return false;
   s.quests.mintDate='cafe';return true;
@@ -42,25 +42,36 @@ export function shareMintDateDrink(s:GameState,drink:DateDrink,mint:{x:number;z:
   if(s.quests.mintDate!=='cafe'||!atMintDateStop(s,mint)||!['soda','tea'].includes(drink))return false;
   s.mintDateDrink=drink;s.quests.mintDate='canal';return true;
 }
-export function completeMintDate(s:GameState,mint:{x:number;z:number}):boolean {
+export function inviteMintHome(s:GameState,mint:{x:number;z:number}):boolean {
   if(s.quests.mintDate!=='canal'||!atMintDateStop(s,mint))return false;
+  s.quests.mintDate='apartment';return true;
+}
+export function atMintBed(s:GameState){return s.scene==='home'&&s.mintAtHome&&Math.hypot(s.player.x-MINT_HOME_SPOT.x,s.player.z-MINT_HOME_SPOT.z)<2.2;}
+export function beginMintSnuggle(s:GameState):boolean {
+  if(s.quests.mintDate!=='apartment'||!atMintBed(s))return false;
+  s.quests.mintDate='snuggle';return true;
+}
+export function completeMintDate(s:GameState):boolean {
+  if(s.quests.mintDate!=='snuggle'||!atMintBed(s))return false;
   s.quests.mintDate='done';
-  if(!reward(s,'mint-first-date',0,['mint']))return false;
-  s.friendship.mint=Math.min(100,s.friendship.mint+10);
-  s.collected.push('mint-date-keepsake');return true;
+  if(reward(s,'mint-first-date',0,['mint']))s.friendship.mint=Math.min(100,s.friendship.mint+10);
+  if(!s.collected.includes('mint-date-keepsake'))s.collected.push('mint-date-keepsake');return true;
+}
+export function sendMintHome(s:GameState):boolean {
+  if(s.quests.mintDate!=='done'||!s.mintAtHome)return false;
+  s.mintAtHome=false;return true;
 }
 export function completeAnomaly(s:GameState):boolean {
   if(s.quests.anomaly!=='found')return false;
-  s.quests.anomaly='done';if(!reward(s,'anomaly-intro',100,['hotori']))return false;
-  s.furniture.push({id:`f-${s.nextId++}`,item:'clock',placement:null});return true;
+  s.quests.anomaly='done';if(reward(s,'anomaly-intro',100,['hotori']))s.furniture.push({id:`f-${s.nextId++}`,item:'clock',placement:null});return true;
 }
 export function completeStickers(s:GameState):boolean {
   if(s.quests.stickers!=='active'||s.collected.filter(x=>x.startsWith('sticker-')).length<3)return false;
-  s.quests.stickers='done';return reward(s,'stickers-intro',150,['nanally']);
+  s.quests.stickers='done';reward(s,'stickers-intro',150,['nanally']);return true;
 }
 export function purchase(s:GameState,item:ItemId):Furniture|null {
   const def=CATALOG[item];if(!def||def.price<=0||s.coins<def.price||s.furniture.length>=80)return null;
-  s.coins-=def.price;const f: Furniture={id:`f-${s.nextId++}`,item,placement:null};s.furniture.push(f);return f;
+  s.coins-=def.price;const f: Furniture={id:`f-${s.nextId++}`,item,placement:null};s.furniture.push(f);if(s.quests.home==='new')s.quests.home='bought';return f;
 }
 export function dimensions(item:ItemId,r:number):[number,number] {const [x,z]=CATALOG[item].size;return r%180===0?[x,z]:[z,x];}
 export function canPlace(s:GameState,id:string,p:Placement):boolean {
@@ -77,7 +88,7 @@ export function canPlace(s:GameState,id:string,p:Placement):boolean {
     if(Math.abs(p.x-other.placement.x)<(w+ow)/2+0.05&&Math.abs(p.z-other.placement.z)<(d+od)/2+0.05)return false;
   }return true;
 }
-export function place(s:GameState,id:string,p:Placement):boolean {if(!canPlace(s,id,p))return false;s.furniture.find(f=>f.id===id)!.placement={...p};return true;}
+export function place(s:GameState,id:string,p:Placement):boolean {if(!canPlace(s,id,p))return false;const f=s.furniture.find(f=>f.id===id)!;f.placement={...p};if(f.item!=='rug')s.quests.home='done';return true;}
 export function validateSave(value:unknown):GameState {
   if(!value||typeof value!=='object')throw Error('This file does not contain a save.');
   const s=clone(value) as GameState;
@@ -89,11 +100,19 @@ export function validateSave(value:unknown):GameState {
   // Additive migration: existing schema-1 saves keep all their progress.
   if(s.quests.mintDate===undefined)s.quests.mintDate='new';
   if(s.mintDateDrink===undefined)s.mintDateDrink=null;
-  if(!['new','cafe','canal','done'].includes(s.quests.mintDate)||![null,'soda','tea'].includes(s.mintDateDrink))throw Error('Invalid Mint date data.');
+  if(s.mintAtHome===undefined)s.mintAtHome=false;
+  if(s.selectedMission===undefined)s.selectedMission=null;
+  if(s.skippedMissions===undefined)s.skippedMissions=[];
+  if(s.quests.home===undefined)s.quests.home=s.rewards?.includes('first-decoration')?'done':s.rewards?.includes('first-purchase')?'bought':'new';
+  if(typeof s.mintAtHome!=='boolean'||(s.selectedMission!==null&&!MISSION_IDS.includes(s.selectedMission))||!Array.isArray(s.skippedMissions)||new Set(s.skippedMissions).size!==s.skippedMissions.length||s.skippedMissions.some(id=>!MISSION_IDS.includes(id))||!['new','bought','done'].includes(s.quests.home))throw Error('Invalid mission data.');
+  if(s.skippedMissions.some(id=>s.quests[id]!=='done'))throw Error('Invalid skipped mission.');
+  if(s.mintAtHome&&!['apartment','snuggle','done'].includes(s.quests.mintDate))throw Error('Invalid Mint visit.');
+  if(s.quests.mintDate==='snuggle'&&!s.mintAtHome)throw Error('Mint must be at home for this scene.');
+  if(!['new','cafe','canal','apartment','snuggle','done'].includes(s.quests.mintDate)||![null,'soda','tea'].includes(s.mintDateDrink))throw Error('Invalid Mint date data.');
   if(s.quests.mintDate!=='new'&&s.quests.delivery!=='done')throw Error('Mint’s date requires the parcel delivery.');
-  if((s.quests.mintDate==='canal'||s.quests.mintDate==='done')!==!!s.mintDateDrink)throw Error('Invalid Mint date progress.');
+  if((['canal','apartment','snuggle','done'].includes(s.quests.mintDate))!==!!s.mintDateDrink)throw Error('Invalid Mint date progress.');
   for(const a of [s.collected,s.rewards])if(!Array.isArray(a)||a.length>500||a.some(v=>typeof v!=='string')||new Set(a).size!==a.length)throw Error('Invalid journal data.');
-  if((s.quests.mintDate==='done')!==s.rewards.includes('mint-first-date')||(s.quests.mintDate==='done')!==s.collected.includes('mint-date-keepsake'))throw Error('Invalid Mint date keepsake.');
+  if(s.rewards.includes('mint-first-date')!==s.collected.includes('mint-date-keepsake')||(s.quests.mintDate==='done'&&!s.skippedMissions.includes('mintDate')&&!s.rewards.includes('mint-first-date')))throw Error('Invalid Mint date keepsake.');
   if(!s.friendship||!['mint','nanally','hotori'].every(k=>finite(s.friendship[k as CharacterId],0,100))||!s.greeted||typeof s.greeted!=='object')throw Error('Invalid friendship data.');
   if(Object.entries(s.greeted).some(([k,v])=>!['mint','nanally','hotori'].includes(k)||!finite(v,1,100000)))throw Error('Invalid greetings.');
   if(!Array.isArray(s.furniture)||s.furniture.length>80||new Set(s.furniture.map(f=>f.id)).size!==s.furniture.length)throw Error('Invalid furniture collection.');
