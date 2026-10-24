@@ -7,3 +7,26 @@
 /* The site entry opens the game at full size, with a route back home. */
 .brand-mark{text-decoration:none;flex-shrink:0;pointer-events:auto}
 @media(max-width:600px){.brand h1{font-size:16px;line-height:1.05;letter-spacing:-.3px;margin:0}.game-title-end{display:block}.brand p{display:none}.brand{gap:8px}.brand-mark{height:38px}.clock-pill{padding:8px}.coin-pill{padding:11px 8px}}
+
+/* Keep the character clear while the conversation pauses the neighborhood. */
+.conversing .quest-card,.conversing .tool-rail,.conversing .hud-bottom,.conversing .hud-top,.conversing #joystick{visibility:hidden}
+.modal-backdrop.conversation-backdrop{background:transparent;backdrop-filter:none;touch-action:none;cursor:grab}
+.modal-backdrop.conversation-backdrop:active{cursor:grabbing}
+.conversing .modal.dialogue{left:auto;right:24px;bottom:24px;top:auto;transform:none;width:min(390px,36vw);max-height:calc(100dvh - 48px);padding:26px;background:#fff9e9f5}
+.conversing .dialogue p{font-size:14px;line-height:1.75;margin:20px 0 0}
+.conversing .dialogue .actions{margin-top:18px;gap:8px}
+.conversing .dialogue .actions>button{flex:1;font-size:12px;padding:12px}
+.conversation-view{display:flex;align-items:center;gap:5px;border-top:1px solid #e0e3cd;margin-top:20px;padding-top:14px;flex-wrap:wrap}
+.conversation-view>span{min-width:0;flex-basis:100%;font-size:10px;color:#68816d;margin-bottom:4px}
+.conversation-view small{display:block;font-size:9px;color:#8d9886;margin-top:4px}
+.conversation-view button{width:44px;min-height:40px;border:1px solid #dce1cc;border-radius:10px;background:#edf1df;font-size:20px;color:#4c7763;touch-action:manipulation}
+.date-keepsake{gap:12px}.date-keepsake small{display:block;font-size:10px;line-height:1.6;margin-top:6px;color:#7d8d77}.date-label{color:#3d7564;border-color:#a5c9b6}
+@media(max-width:899px){
+  .conversing .modal.dialogue{left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));width:auto;max-width:none;max-height:40dvh;padding:18px 20px;border-radius:19px}
+  .conversing .dialogue .portrait{width:36px;height:36px;border-width:3px;font-size:19px;margin:0 12px 8px 0}
+  .conversing .dialogue h2{font-size:20px;margin:3px 0}.conversing .dialogue .role{font-size:9px}
+  .conversing .dialogue p{font-size:12px;line-height:1.55;margin-top:12px}
+  .conversing .dialogue .actions{margin-top:12px}.conversing .dialogue .actions>button{font-size:11px;padding:11px}
+  .conversation-view{margin-top:12px;padding-top:10px;gap:4px;flex-wrap:nowrap}
+  .conversation-view>span{flex:1;font-size:9px}.conversation-view small{display:none}.conversation-view button{width:38px;min-height:38px;flex-shrink:0;font-size:18px}
+}

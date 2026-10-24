@@ -2,11 +2,13 @@
 
 A browser-first, cozy 3D neighborhood in Hethereau. This is a personal, unofficial NTE fan prototype, built from the October 23, 2026 NTE Cozy Neighborhood Game Plan. Mint now uses an optimized textured reconstruction; the other character models are being developed separately.
 
-## Playable in 0.1
+## Playable in 0.2
 
 - A pedestrian block with apartments, café frontage, antique shop, courtyard, alley, and canal.
 - Click/tap pathfinding, keyboard movement, touch joystick, collision, camera follow, zoom, interaction prompts, and map wayfinding.
 - Mint's parcel delivery, Hotori's wandering-clock appraisal, Nanally's optional three-sticker hunt, and a forgiving fishing activity.
+- Closer zoom that follows the player; clear conversation close-ups with drag, orbit buttons, keyboard arrows, and zoom controls.
+- “First date with Mint,” unlocked after the parcel delivery: a café drink choice, canal rendezvous, +20 friendship (capped at 100), and a saved café-receipt keepsake. Mint walks to each stop and waits.
 - Currency, unique reward claims, once-per-day greeting friendship, seven purchasable furniture types, and a keepsake reward.
 - Apartment interior, sleep, furniture placement, quarter-meter snapping, rotation, storage, and session undo. Doorway and bed access remain clear.
 - A 36-active-minute day, evening lighting, deterministic rain every third simulated day, menu/focus pausing, optional reward chimes, and reduced motion.
@@ -30,6 +32,7 @@ The repository root build runs this build and copies `lantern_lane/dist/` into t
 | File | Responsibility |
 | --- | --- |
 | `src/main.ts` | Input, UI, dialogue flows, camera, activity orchestration |
+| `src/camera.ts` | Zoom limits, conversation framing, facing, and foreground cutaway |
 | `src/world.ts` | Procedural 3D scenery, stand-ins, GLB adapter, collisions and A* navigation |
 | `src/state.ts` | Pure quest, economy, friendship, placement and save-validation rules |
 | `src/content.ts` | Stable content IDs, catalog, characters and ambient dialogue |
@@ -41,7 +44,7 @@ The repository root build runs this build and copies `lantern_lane/dist/` into t
 
 ## What this is not yet
 
-This is the initial movement-and-daily-loop prototype, not the full content-complete plan. NPCs have light local roaming, not full daily schedules. Curios & Co. uses a shop menu rather than a separate explorable interior. Rooftop visits, the gathering ending, detailed friendship stories, 30-piece catalog, cloud saves, and multiplayer are not implemented. Mint uses her static textured GLB, with light whole-model motion. Her skeleton, facial animation and walk cycle are still pending. Nanally and Hotori retain their stand-ins.
+This is the initial movement-and-daily-loop prototype, not the full content-complete plan. NPCs have light local roaming, not full daily schedules. Curios & Co. uses a shop menu rather than a separate explorable interior. Rooftop visits, the gathering ending, further friendship stories, 30-piece catalog, cloud saves, and multiplayer are not implemented. Mint uses her static textured GLB, with light whole-model motion. Her skeleton, facial animation and walk cycle are still pending. Nanally and Hotori retain their stand-ins.
 
 See [model integration](docs/character-integration.md), [next milestones](docs/roadmap.md), and [validation](docs/validation.md).
 

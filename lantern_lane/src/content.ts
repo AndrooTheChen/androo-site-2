@@ -1,4 +1,8 @@
-export const CONTENT_VERSION = '0.1.0';
+export const CONTENT_VERSION = '0.2.0';
+export const MINT_DATE_STOPS = {
+  cafe: { x: -2.5, z: 1, name: 'Morrow Café', hint: 'Meet Mint in front of Morrow Café and choose a drink together.' },
+  canal: { x: 12, z: 8.5, name: 'Canal walk', hint: 'Meet Mint at the canal overlook for a quiet moment together.' },
+} as const;
 export const CHARACTERS = {
   mint: { name: 'Mint', color: '#65c9b5', hair: '#4aaeb0', role: 'Your neighborhood guide', model: 'assets/characters/mint.glb' },
   nanally: { name: 'Nanally', color: '#e68b8e', hair: '#e79193', role: 'Head of very important adventures', model: 'assets/characters/nanally.glb' },
