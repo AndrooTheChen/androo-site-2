@@ -36,3 +36,23 @@ A separate software projection of the actual scene geometry was used to inspect 
 7. Check map routes, fishing, sticker collection, sleep, rain on Day 3, reduced motion, background/resume, narrow portrait and landscape screens.
 
 New published origins have their own browser-local save; QA data on the local preview is not part of the deployed game.
+
+## Mint model integration — October 23, 2026
+
+The root production build, website checks and all 15 Node tests pass. Three new
+checks cover model normalization without moving the gameplay root, preservation
+of the stand-in on invalid geometry, and the shipped GLB's finite geometry,
+embedded textures and 90,000-triangle / 6 MiB limits. The imported static visual
+is the one used for whole-model motion; old stand-in limb animation is removed.
+
+The existing 34,144-triangle scene test uses stand-ins; it does not include
+asynchronously loaded models. Mint's 81,616 triangles are checked separately.
+
+The managed browser still shows the unsupported-WebGL screen. An in-game
+playthrough, daylight/evening material review, phone frame times and real Safari
+behavior remain unverified. Do not treat automated asset checks as a frame-rate
+benchmark or the static pose as a finished walk animation.
+
+A front-view Blender comparison of the original and game mesh was inspected.
+The final reduction retains the face and hair silhouette; texture bytes are
+identical to the original. This asset render is not an in-game playthrough.

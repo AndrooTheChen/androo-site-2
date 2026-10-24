@@ -47,6 +47,36 @@ export function makeActor(color:string,hair:string,kind='player'):Actor{
   if(kind==='nanally'){for(const xx of [-.16,.16]){const tor=new THREE.Mesh(new THREE.TorusGeometry(.13,.018,5,14),mat('#564c49'));tor.position.set(xx,1.65,.59);g.add(tor);}box(g,0,1.65,.6,.12,.025,.025,'#564c49');}
   return {root,visual:g,limbs,moving:false,phase:Math.random()*6};
 }
+// Replace only the visual: the actor root still owns navigation, collision and facing.
+export function installCharacterModel(actor:Actor,gltf:{scene:THREE.Group;animations:THREE.AnimationClip[]},entry:{height?:number;facingOffset?:number}){
+  const model=gltf.scene;
+  const bounds=new THREE.Box3().setFromObject(model);
+  const height=bounds.getSize(new THREE.Vector3()).y;
+  const targetHeight=entry.height??2.2;
+  const facing=entry.facingOffset??0;
+  if(!Number.isFinite(height)||height<=0||!Number.isFinite(targetHeight)||targetHeight<=0||!Number.isFinite(facing))throw new Error('Invalid character bounds or dimensions');
+  model.scale.multiplyScalar(targetHeight/height);
+  const scaled=new THREE.Box3().setFromObject(model),center=scaled.getCenter(new THREE.Vector3());
+  model.position.sub(new THREE.Vector3(center.x,scaled.min.y,center.z));
+  const wrapper=new THREE.Group();
+  wrapper.name='character-model';
+  wrapper.rotation.y=facing*Math.PI/180;
+  wrapper.add(model);
+  model.traverse(o=>{if(o instanceof THREE.Mesh){o.castShadow=true;o.receiveShadow=true;}});
+  const mixer=gltf.animations.length?new THREE.AnimationMixer(model):undefined;
+  const idle=gltf.animations.find(c=>/idle/i.test(c.name)),walk=gltf.animations.find(c=>/walk|jog/i.test(c.name));
+  const actions=mixer?{idle:idle?mixer.clipAction(idle):undefined,walk:walk?mixer.clipAction(walk):undefined}:undefined;
+  actions?.idle?.play();
+  const previous=actor.visual;
+  actor.mixer?.stopAllAction();
+  actor.root.add(wrapper);
+  actor.visual=wrapper;
+  actor.limbs=[];
+  actor.mixer=mixer;
+  actor.actions=actions;
+  previous.removeFromParent();
+  previous.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});
+}
 export function furnitureModel(item:ItemId):THREE.Group{
   const g=new THREE.Group();const c=CATALOG[item].color;
   if(item==='lamp'){cyl(g,0,.1,0,.26,.3,.16,'#b89360');cyl(g,0,.65,0,.035,.045,1.1,'#a78557');cyl(g,0,1.3,0,.23,.4,.47,c);ball(g,0,1.27,0,.14,'#fff0bd');}
@@ -131,7 +161,22 @@ export class World{
   }
   setGhost(item:ItemId,p:Placement,valid:boolean){if(this.ghost){this.scene.remove(this.ghost);this.ghost.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();if(!Array.isArray(o.material))o.material.dispose();}});}this.ghost=furnitureModel(item);this.ghost.position.set(p.x,.08,p.z);this.ghost.rotation.y=p.rotation*Math.PI/180;this.ghost.traverse(o=>{if(o instanceof THREE.Mesh){const m=(o.material as THREE.MeshStandardMaterial).clone();m.transparent=true;m.opacity=.65;m.color.set(valid?'#73bda0':'#df877b');o.material=m;o.castShadow=false;}});this.scene.add(this.ghost);}
   clearGhost(){if(this.ghost){this.scene.remove(this.ghost);this.ghost.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();if(!Array.isArray(o.material))o.material.dispose();}});this.ghost=null;}}
-  async loadCharacters(){try{const manifest=await fetch(new URL('assets/characters/manifest.json',document.baseURI)).then(r=>r.json());for(const id of Object.keys(CHARACTERS) as CharacterId[]){const entry=manifest[id];if(!entry?.url)continue;try{const gltf=await new GLTFLoader().loadAsync(new URL(entry.url,document.baseURI).href);const a=this.actors.get(id)!;a.visual.visible=false;const model=gltf.scene;const b=new THREE.Box3().setFromObject(model);const size=b.getSize(new THREE.Vector3());model.scale.setScalar((entry.height??2.2)/Math.max(.01,size.y));const scaled=new THREE.Box3().setFromObject(model);const center=scaled.getCenter(new THREE.Vector3());model.position.set(-center.x,-scaled.min.y,-center.z);const wrapper=new THREE.Group();wrapper.rotation.y=(entry.facingOffset??0)*Math.PI/180;wrapper.add(model);a.root.add(wrapper);model.traverse(o=>{if(o instanceof THREE.Mesh){o.castShadow=true;o.receiveShadow=true;}});if(gltf.animations.length){a.mixer=new THREE.AnimationMixer(model);const idle=gltf.animations.find(c=>/idle/i.test(c.name)),walk=gltf.animations.find(c=>/walk|jog/i.test(c.name));a.actions={idle:idle?a.mixer.clipAction(idle):undefined,walk:walk?a.mixer.clipAction(walk):undefined};a.actions.idle?.play();}}catch(e){console.warn(`Model ${id} unavailable; using stand-in.`,e);}}}catch(e){console.warn('Character manifest unavailable; using stand-ins.',e);}}
+  async loadCharacters(){
+    try {
+      const response=await fetch(new URL('assets/characters/manifest.json',document.baseURI));
+      if(response.ok===false)throw new Error(`Character manifest returned ${response.status}`);
+      const manifest=await response.json();
+      const loader=new GLTFLoader();
+      for(const id of Object.keys(CHARACTERS) as CharacterId[]){
+        const entry=manifest[id];
+        if(!entry?.url)continue;
+        try {
+          const gltf=await loader.loadAsync(new URL(entry.url,document.baseURI).href);
+          installCharacterModel(this.actors.get(id)!,gltf,entry);
+        } catch(e) { console.warn(`Model ${id} unavailable; using stand-in.`,e); }
+      }
+    } catch(e) { console.warn('Character manifest unavailable; using stand-ins.',e); }
+  }
   tick(dt:number,time:number,s:GameState,paused:boolean){const evening=Math.max(0,Math.min(1,(s.minutes-17*60)/150));const night=s.minutes<6*60?1:evening;this.sunlight.intensity=2.4-night*1.9;this.ambient.intensity=2.2-night*.85;this.sky.set('#bad3ca').lerp(new THREE.Color('#687e8c'),night);this.scene.background=this.sky;(this.scene.fog as THREE.Fog).color.copy(this.sky);this.sunlight.color.set('#fff2d4').lerp(new THREE.Color('#f2ba9a'),evening);this.rain.visible=s.day%3===0&&s.scene==='town';if(this.rain.visible&&!paused){const a=this.rain.geometry.attributes.position;for(let i=0;i<a.count;i++){a.setY(i,a.getY(i)-dt*10);if(a.getY(i)<0)a.setY(i,18);}a.needsUpdate=true;}
     for(const [id,g]of this.pickups)if(!paused&&!s.settings.reducedMotion){g.position.y=.8+Math.sin(time*2+id.length)*.12;g.rotation.y+=dt*.7;}
     for(const a of [this.player,...this.actors.values()]){if(a.mixer){a.mixer.update(paused?0:dt);if(a.actions?.walk){const walking=a.moving&&!paused;a.actions.walk.enabled=walking;if(walking&&!a.actions.walk.isRunning())a.actions.walk.play();if(a.actions.idle)a.actions.idle.enabled=!walking;}}else{a.visual.position.y=paused||s.settings.reducedMotion?0:(a.moving?Math.sin(time*14)*.045:Math.sin(time*2+a.phase)*.025);a.limbs.forEach((l,i)=>l.rotation.x=a.moving&&!paused?Math.sin(time*12+i%2*Math.PI)*.45:0);}}

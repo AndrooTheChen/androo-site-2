@@ -1,6 +1,6 @@
 # Hetherau Crossing · Lantern Lane
 
-A browser-first, cozy 3D neighborhood in Hethereau. This is a personal, unofficial NTE fan prototype, built from the October 23, 2026 NTE Cozy Neighborhood Game Plan. Final character art is being developed separately.
+A browser-first, cozy 3D neighborhood in Hethereau. This is a personal, unofficial NTE fan prototype, built from the October 23, 2026 NTE Cozy Neighborhood Game Plan. Mint now uses an optimized textured reconstruction; the other character models are being developed separately.
 
 ## Playable in 0.1
 
@@ -41,7 +41,7 @@ The repository root build runs this build and copies `lantern_lane/dist/` into t
 
 ## What this is not yet
 
-This is the initial movement-and-daily-loop prototype, not the full content-complete plan. NPCs have light local roaming, not full daily schedules. Curios & Co. uses a shop menu rather than a separate explorable interior. Rooftop visits, the gathering ending, detailed friendship stories, 30-piece catalog, cloud saves, and multiplayer are not implemented. Character stand-ins intentionally await the other workstream.
+This is the initial movement-and-daily-loop prototype, not the full content-complete plan. NPCs have light local roaming, not full daily schedules. Curios & Co. uses a shop menu rather than a separate explorable interior. Rooftop visits, the gathering ending, detailed friendship stories, 30-piece catalog, cloud saves, and multiplayer are not implemented. Mint uses her static textured GLB, with light whole-model motion. Her skeleton, facial animation and walk cycle are still pending. Nanally and Hotori retain their stand-ins.
 
 See [model integration](docs/character-integration.md), [next milestones](docs/roadmap.md), and [validation](docs/validation.md).
 

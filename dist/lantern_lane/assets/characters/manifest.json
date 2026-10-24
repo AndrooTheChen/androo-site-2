@@ -1,1 +1,5 @@
-{"mint":null,"nanally":null,"hotori":null}
+{
+  "mint": { "url": "assets/characters/mint.glb", "height": 2.2, "facingOffset": 0 },
+  "nanally": null,
+  "hotori": null
+}
