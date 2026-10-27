@@ -1,5 +1,5 @@
 {
   "mint": { "url": "assets/characters/mint.glb", "height": 2.2, "facingOffset": 0 },
-  "nanally": null,
+  "nanally": { "url": "assets/characters/nanally.glb", "height": 2.2, "facingOffset": 0 },
   "hotori": null
 }

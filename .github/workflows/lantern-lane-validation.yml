@@ -1,0 +1,71 @@
+name: Validate Lantern Lane
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lantern_lane/**'
+      - 'scripts/**'
+      - 'package*.json'
+      - '.github/workflows/lantern-lane-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lantern-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            lantern_lane/package-lock.json
+      - name: Install project dependencies
+        run: |
+          npm ci
+          npm ci --prefix lantern_lane
+      - name: Build production website
+        run: npm run build
+      - name: Run repository and model checks
+        run: npm run check
+      - name: Install isolated browser test dependencies
+        run: |
+          npm install --prefix "$RUNNER_TEMP/lantern-browser" --no-package-lock --no-audit --no-fund playwright@1.56.1
+          "$RUNNER_TEMP/lantern-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Prepare an isolated gameplay test save
+        working-directory: lantern_lane
+        run: |
+          node --import tsx --input-type=module <<'JS'
+          import {writeFileSync} from 'node:fs';
+          import {initialState,validateSave} from './src/state.ts';
+          const state=initialState();
+          state.started=true;
+          state.name='Browser test';
+          state.player={x:8,z:7.15};
+          state.quests.delivery='active';
+          state.settings={sound:false,reducedMotion:true};
+          writeFileSync(process.env.RUNNER_TEMP+'/nanally-fixture.json',JSON.stringify(validateSave(state)));
+          JS
+      - name: Render Nanally and test F-interaction, missions, camera, and saved progress
+        run: |
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/lantern-browser/node_modules/playwright" \
+          NANALLY_FIXTURE="$RUNNER_TEMP/nanally-fixture.json" \
+          node lantern_lane/tools/validate-nanally-browser.cjs
+      - name: Retain browser screenshots and validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nanally-browser-validation
+          path: nanally-browser-report/
+          if-no-files-found: ignore
+          retention-days: 14
